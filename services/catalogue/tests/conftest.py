@@ -1,9 +1,13 @@
-from collections.abc import Callable
+import os
+from collections.abc import Callable, Iterator
 
 import httpx2
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
 from catalogue.infrastructure.jolpica import Backoff, JolpicaClient
+from catalogue.infrastructure.settings import Settings
 
 Handler = Callable[[httpx2.Request], httpx2.Response]
 
@@ -29,3 +33,20 @@ def make_client(sleeps: list[float]) -> Callable[[Handler], JolpicaClient]:
         )
 
     return build
+
+
+@pytest.fixture
+def database_url() -> str:
+    if "POSTGRES_PASSWORD" not in os.environ:
+        pytest.skip("POSTGRES_* not set; run with: uv run --env-file .env pytest")
+    return Settings().database_url
+
+
+@pytest.fixture
+def db_session(database_url: str) -> Iterator[Session]:
+    engine = create_engine(database_url)
+    with engine.connect() as connection:
+        transaction = connection.begin()
+        with Session(bind=connection) as session:
+            yield session
+        transaction.rollback()
