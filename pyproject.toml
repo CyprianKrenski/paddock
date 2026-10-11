@@ -1,0 +1,45 @@
+[project]
+name = "paddock"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = ["catalogue"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["services/*"]
+
+[tool.uv.sources]
+catalogue = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.13.1",
+    "mypy>=2.4.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.0",
+]
+
+[tool.ruff]
+cache-dir = ".cache/ruff"
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["catalogue", "analysis", "web"]
+
+[tool.mypy]
+cache_dir = ".cache/mypy"
+strict = true
+files = ["services"]
+explicit_package_bases = true
+mypy_path = "services/catalogue/src"
+
+[tool.pytest.ini_options]
+cache_dir = ".cache/pytest"
+testpaths = ["services"]
+addopts = "--import-mode=importlib"
