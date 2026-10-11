@@ -4,7 +4,7 @@ from collections.abc import Callable, Iterator
 import httpx2
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from catalogue.infrastructure.jolpica import Backoff, JolpicaClient
 from catalogue.infrastructure.settings import Settings
@@ -43,10 +43,9 @@ def database_url() -> str:
 
 
 @pytest.fixture
-def db_session(database_url: str) -> Iterator[Session]:
+def db_sessions(database_url: str) -> Iterator[sessionmaker[Session]]:
     engine = create_engine(database_url)
     with engine.connect() as connection:
         transaction = connection.begin()
-        with Session(bind=connection) as session:
-            yield session
+        yield sessionmaker(bind=connection, join_transaction_mode="create_savepoint")
         transaction.rollback()
