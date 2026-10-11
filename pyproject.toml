@@ -15,10 +15,12 @@ catalogue = { workspace = true }
 
 [dependency-groups]
 dev = [
+    "factory-boy>=3.3.3",
     "httpx2>=2.13.1",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
     "ruff>=0.17.0",
+    "types-factory-boy>=0.4.1",
 ]
 
 [tool.ruff]
@@ -31,15 +33,17 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["catalogue", "analysis", "web"]
+known-local-folder = ["catalogue_tests"]
 
 [tool.mypy]
 cache_dir = ".cache/mypy"
 strict = true
 files = ["services"]
 explicit_package_bases = true
-mypy_path = "services/catalogue/src"
+mypy_path = ["services/catalogue/src", "services/catalogue/tests/support"]
 
 [tool.pytest.ini_options]
 cache_dir = ".cache/pytest"
 testpaths = ["services"]
+pythonpath = ["services/catalogue/tests/support"]
 addopts = "--import-mode=importlib"
