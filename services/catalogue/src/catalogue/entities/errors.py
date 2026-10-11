@@ -1,0 +1,2 @@
+class MalformedSourceRawData(ValueError):
+    pass
