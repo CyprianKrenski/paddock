@@ -1,9 +1,16 @@
-from collections.abc import Callable
+import time
+from collections.abc import Callable, Iterator
+from email.utils import formatdate
 
 import httpx2
 import pytest
 
-from catalogue.infrastructure.jolpica import JolpicaClient, UpstreamUnavailable
+from catalogue.infrastructure.jolpica import (
+    IncorrectPayload,
+    JolpicaClient,
+    RetriesExhausted,
+    UnretryableResponse,
+)
 
 from catalogue_tests.factories import EnvelopeFactory
 
@@ -35,28 +42,62 @@ def test_retries_429_with_growing_delays(make_client: MakeClient, sleeps: list[f
     assert sleeps == [0.75, 1.25]
 
 
-def test_retry_after_header_extends_the_delay(make_client: MakeClient, sleeps: list[float]) -> None:
+def test_server_errors_and_network_errors_are_retried(
+    make_client: MakeClient, sleeps: list[float]
+) -> None:
+    outcomes: Iterator[str | int] = iter(["network", 503, 200])
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        outcome = next(outcomes)
+        if isinstance(outcome, str):
+            raise httpx2.ConnectError("refused", request=request)
+        return httpx2.Response(outcome, json=EnvelopeFactory())
+
+    make_client(handler).get_json("/2025/1/laps.json")
+
+    assert sleeps == [0.75, 1.25]
+
+
+@pytest.mark.parametrize(
+    ("header", "first_delay"),
+    [
+        ("3", 3.25),
+        (formatdate(time.time() + 3600, usegmt=True), 30.25),
+        (formatdate(time.time() - 3600, usegmt=True), 0.75),
+        ("soon", 0.75),
+    ],
+    ids=["seconds", "date-in-future-capped", "date-in-past", "garbage"],
+)
+def test_retry_after_header_sets_a_capped_minimum_delay(
+    make_client: MakeClient, sleeps: list[float], header: str, first_delay: float
+) -> None:
     responses = iter(
         [
-            httpx2.Response(429, headers={"Retry-After": "3"}),
+            httpx2.Response(429, headers={"Retry-After": header}),
             httpx2.Response(200, json=EnvelopeFactory()),
         ]
     )
 
     make_client(lambda request: next(responses)).get_json("/2025/1/laps.json")
 
-    assert sleeps == [3.25]
+    assert sleeps == [first_delay]
 
 
 def test_gives_up_after_configured_attempts(make_client: MakeClient, sleeps: list[float]) -> None:
-    with pytest.raises(UpstreamUnavailable, match="4 attempts"):
+    with pytest.raises(RetriesExhausted, match="4 attempts"):
         make_client(lambda request: httpx2.Response(429)).get_json("/2025/1/laps.json")
 
     assert sleeps == [0.75, 1.25, 2.25]
 
 
-def test_client_errors_are_not_retried(make_client: MakeClient, sleeps: list[float]) -> None:
-    with pytest.raises(UpstreamUnavailable, match="404"):
-        make_client(lambda request: httpx2.Response(404)).get_json("/1950/99/laps.json")
+def test_other_client_errors_are_not_retried(make_client: MakeClient, sleeps: list[float]) -> None:
+    with pytest.raises(UnretryableResponse, match="400") as failure:
+        make_client(lambda request: httpx2.Response(400)).get_json("/2025/1/laps.json")
 
+    assert failure.value.status_code == 400
     assert sleeps == []
+
+
+def test_non_json_body_is_malformed_payload(make_client: MakeClient) -> None:
+    with pytest.raises(IncorrectPayload, match="not JSON"):
+        make_client(lambda request: httpx2.Response(200, text="<html>")).get_json("/x.json")

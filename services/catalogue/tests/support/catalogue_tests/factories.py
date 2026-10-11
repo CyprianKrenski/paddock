@@ -25,3 +25,21 @@ class MRDataFactory(DictFactory):
 
 class EnvelopeFactory(DictFactory):
     MRData: factory.SubFactory[Any, dict[str, Any]] = factory.SubFactory(MRDataFactory)
+
+
+class TimingFactory(DictFactory):
+    driverId = "norris"
+    position = "1"
+    time = "1:57.099"
+
+
+class LapFactory(DictFactory):
+    number = "1"
+    Timings: factory.LazyFunction[list[Any]] = factory.LazyFunction(list)
+
+
+class RaceFactory(DictFactory):
+    season = "2025"
+    round = "1"
+    raceName = "Australian Grand Prix"
+    Laps: factory.LazyFunction[list[Any]] = factory.LazyFunction(list)

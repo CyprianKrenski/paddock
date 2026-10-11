@@ -113,12 +113,14 @@ version = "0.1.0"
 source = { editable = "services/catalogue" }
 dependencies = [
     { name = "fastapi" },
+    { name = "pydantic" },
     { name = "uvicorn" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.143.0" },
+    { name = "pydantic", specifier = ">=2.14.0" },
     { name = "uvicorn", specifier = ">=0.54.0" },
 ]
 
