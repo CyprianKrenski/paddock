@@ -1,0 +1,53 @@
+from dataclasses import asdict
+from typing import Any
+
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
+
+from catalogue.entities.models import Driver, Lap, PitStop, Race, Result
+from catalogue.entities.race_snapshot import RaceSnapshot
+
+
+class SqlRaceStore:
+    def __init__(self, session: Session) -> None:
+        self._session = session
+
+    def save(self, snapshot: RaceSnapshot) -> None:
+        race_id = self._upsert_race(snapshot)
+        self._upsert(Driver, [asdict(driver) for driver in snapshot.drivers], ["id"])
+        self._upsert(
+            Result,
+            [{"race_id": race_id, **asdict(row)} for row in snapshot.results],
+            ["race_id", "driver_id"],
+        )
+        self._upsert(
+            Lap,
+            [{"race_id": race_id, **asdict(row)} for row in snapshot.laps],
+            ["race_id", "driver_id", "lap"],
+        )
+        self._upsert(
+            PitStop,
+            [{"race_id": race_id, **asdict(row)} for row in snapshot.pit_stops],
+            ["race_id", "driver_id", "stop"],
+        )
+
+    def _upsert_race(self, snapshot: RaceSnapshot) -> int:
+        inserted = insert(Race).values(asdict(snapshot.race))
+        refreshed = ("name", "circuit_id", "circuit_name", "date", "total_laps")
+        upsert = inserted.on_conflict_do_update(
+            index_elements=["season", "round"],
+            set_={column: inserted.excluded[column] for column in refreshed},
+        )
+        race_id: int = self._session.execute(upsert.returning(Race.id)).scalar_one()
+        return race_id
+
+    def _upsert(self, model: type[Any], rows: list[dict[str, Any]], key: list[str]) -> None:
+        if not rows:
+            return
+        statement = insert(model).values(rows)
+        updates = {column: statement.excluded[column] for column in rows[0] if column not in key}
+        if updates:
+            statement = statement.on_conflict_do_update(index_elements=key, set_=updates)
+        else:
+            statement = statement.on_conflict_do_nothing(index_elements=key)
+        self._session.execute(statement)

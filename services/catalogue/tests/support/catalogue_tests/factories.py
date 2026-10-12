@@ -19,7 +19,7 @@ class RaceTableFactory(DictFactory):
 class MRDataFactory(DictFactory):
     limit = "100"
     offset = "0"
-    total = "921"
+    total = "1"
     RaceTable: factory.SubFactory[Any, dict[str, Any]] = factory.SubFactory(RaceTableFactory)
 
 

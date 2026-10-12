@@ -13,5 +13,5 @@ uv run --env-file .env pytest -q          # integration tests included
 uv run pytest -q                          # unit tests only, integration skipped
 uv run ruff check . && uv run ruff format --check .
 uv run mypy
-uv run --env-file .env uvicorn catalogue.main:create_app --factory --port 8001
+uv run --env-file .env uvicorn catalogue.main:from_env --factory --port 8001
 ```

@@ -12,7 +12,7 @@ pytestmark = pytest.mark.integration
 def test_missing_url_is_none(db_sessions: sessionmaker[Session]) -> None:
     store: RawResponseStore = SqlRawResponseStore(db_sessions)
 
-    assert store.get("/2025/1/laps.json?limit=100&offset=0") is None
+    assert store.get("/1900/1/laps.json?limit=100&offset=0") is None
 
 
 def test_put_then_get_returns_the_body(db_sessions: sessionmaker[Session]) -> None:
@@ -38,6 +38,8 @@ def test_store_commits_its_own_work_but_the_test_transaction_stays_contained(
     SqlRawResponseStore(db_sessions).put("/y.json", {"v": 1})
 
     with create_engine(database_url).connect() as outsider:
-        visible = outsider.scalar(select(func.count()).select_from(RawResponse))
+        visible = outsider.scalar(
+            select(func.count()).select_from(RawResponse).where(RawResponse.url == "/y.json")
+        )
 
     assert visible == 0

@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     postgres_db: str
     postgres_host: str = "localhost"
     postgres_port: int = 5432
+    jolpica_base_url: str = "https://api.jolpi.ca/ergast/f1"
+    jolpica_user_agent: str = "paddock/0.1"
+    jolpica_timeout_seconds: float = 20.0
 
     @property
     def database_url(self) -> str:
