@@ -1,0 +1,111 @@
+from dataclasses import dataclass
+from typing import Protocol
+
+from catalogue.entities.errors import MalformedSourceRawData
+from catalogue.entities.lap_time import parse_lap_time
+from catalogue.entities.race_snapshot import (
+    DriverInfo,
+    LapRow,
+    PitStopRow,
+    RaceInfo,
+    RaceSnapshot,
+    ResultRow,
+)
+from catalogue.infrastructure.jolpica_pages import (
+    FetchJson,
+    ResultsRace,
+    lap_timings,
+    pit_stop_entries,
+    race_results,
+)
+
+
+class RaceStore(Protocol):
+    def save(self, snapshot: RaceSnapshot) -> None: ...
+
+
+class RaceNotFound(Exception):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
+class IngestSummary:
+    drivers: int
+    laps: int
+    pit_stops: int
+
+
+def ingest_race(
+    fetch: FetchJson, store: RaceStore, season: int, round_number: int
+) -> IngestSummary:
+    results = race_results(fetch, season, round_number)
+    if results is None:
+        raise RaceNotFound(f"season {season} round {round_number} is unknown to the source")
+    snapshot = build_snapshot(results, fetch, season, round_number)
+    store.save(snapshot)
+    return IngestSummary(
+        drivers=len(snapshot.drivers), laps=len(snapshot.laps), pit_stops=len(snapshot.pit_stops)
+    )
+
+
+def build_snapshot(
+    results: ResultsRace, fetch: FetchJson, season: int, round_number: int
+) -> RaceSnapshot:
+    drivers = tuple(
+        DriverInfo(
+            id=entry.driver.driver_id,
+            code=entry.driver.code,
+            given_name=entry.driver.given_name,
+            family_name=entry.driver.family_name,
+        )
+        for entry in results.results
+    )
+    known = {driver.id for driver in drivers}
+    laps = tuple(
+        LapRow(
+            driver_id=known_driver(timing.driver_id, known),
+            lap=timing.lap,
+            position=timing.position,
+            time_ms=parse_lap_time(timing.time),
+        )
+        for timing in lap_timings(fetch, season, round_number)
+    )
+    pit_stops = tuple(
+        PitStopRow(
+            driver_id=known_driver(entry.driver_id, known),
+            stop=entry.stop,
+            lap=entry.lap,
+            duration_ms=parse_lap_time(entry.duration),
+        )
+        for entry in pit_stop_entries(fetch, season, round_number)
+    )
+    return RaceSnapshot(
+        race=RaceInfo(
+            season=results.season,
+            round_number=results.round_number,
+            name=results.name,
+            circuit_id=results.circuit.circuit_id,
+            circuit_name=results.circuit.circuit_name,
+            date=results.date,
+            total_laps=max((entry.laps for entry in results.results), default=None),
+        ),
+        drivers=drivers,
+        results=tuple(
+            ResultRow(
+                driver_id=entry.driver.driver_id,
+                position=entry.position,
+                grid=entry.grid,
+                laps=entry.laps,
+                status=entry.status,
+            )
+            for entry in results.results
+        ),
+        laps=laps,
+        pit_stops=pit_stops,
+    )
+
+
+def known_driver(driver_id: str, known: set[str]) -> str:
+    if driver_id not in known:
+        raise MalformedSourceRawData(f"driver {driver_id!r} has laps or stops but no result row")
+    return driver_id

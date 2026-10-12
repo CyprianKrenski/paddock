@@ -1,4 +1,5 @@
 from collections.abc import Iterator, Mapping
+from datetime import date
 from typing import Protocol
 
 from pydantic import BaseModel, Field
@@ -30,6 +31,23 @@ def pages(fetch: FetchJson, path: str) -> Iterator[JsonObject]:
         yield fetch(path, {"limit": MAX_PAGE_SIZE, "offset": offset})
 
 
+class RaceTable(BaseModel):
+    races: list[JsonObject] = Field(alias="Races")
+
+
+class RaceTablePage(BaseModel):
+    table: RaceTable = Field(alias="RaceTable")
+
+
+class RaceEnvelope(BaseModel):
+    data: RaceTablePage = Field(alias="MRData")
+
+
+def races_in[R: BaseModel](payload: JsonObject, race: type[R]) -> list[R]:
+    table = RaceEnvelope.model_validate(payload).data.table
+    return [race.model_validate(item) for item in table.races]
+
+
 class Timing(BaseModel):
     driver_id: str = Field(alias="driverId")
     position: int
@@ -45,18 +63,6 @@ class LapsRace(BaseModel):
     laps: list[Lap] = Field(alias="Laps")
 
 
-class LapsTable(BaseModel):
-    races: list[LapsRace] = Field(alias="Races")
-
-
-class LapsPage(BaseModel):
-    table: LapsTable = Field(alias="RaceTable")
-
-
-class LapsEnvelope(BaseModel):
-    data: LapsPage = Field(alias="MRData")
-
-
 class LapTiming(BaseModel):
     lap: int
     driver_id: str
@@ -66,7 +72,7 @@ class LapTiming(BaseModel):
 
 def lap_timings(fetch: FetchJson, season: int, round_number: int) -> Iterator[LapTiming]:
     for payload in pages(fetch, f"/{season}/{round_number}/laps.json"):
-        for race in LapsEnvelope.model_validate(payload).data.table.races:
+        for race in races_in(payload, LapsRace):
             for lap in race.laps:
                 for timing in lap.timings:
                     yield LapTiming(
@@ -75,3 +81,60 @@ def lap_timings(fetch: FetchJson, season: int, round_number: int) -> Iterator[La
                         position=timing.position,
                         time=timing.time,
                     )
+
+
+class DriverRef(BaseModel):
+    driver_id: str = Field(alias="driverId")
+    code: str | None = None
+    given_name: str = Field(alias="givenName")
+    family_name: str = Field(alias="familyName")
+
+
+class ResultEntry(BaseModel):
+    position: int | None = None
+    grid: int
+    laps: int
+    status: str
+    driver: DriverRef = Field(alias="Driver")
+
+
+class Circuit(BaseModel):
+    circuit_id: str = Field(alias="circuitId")
+    circuit_name: str = Field(alias="circuitName")
+
+
+class ResultsRace(BaseModel):
+    season: int
+    round_number: int = Field(alias="round")
+    name: str = Field(alias="raceName")
+    circuit: Circuit = Field(alias="Circuit")
+    date: date
+    results: list[ResultEntry] = Field(alias="Results")
+
+
+def race_results(fetch: FetchJson, season: int, round_number: int) -> ResultsRace | None:
+    found: ResultsRace | None = None
+    for payload in pages(fetch, f"/{season}/{round_number}/results.json"):
+        for race in races_in(payload, ResultsRace):
+            if found is None:
+                found = race
+            else:
+                found.results.extend(race.results)
+    return found
+
+
+class PitStopEntry(BaseModel):
+    driver_id: str = Field(alias="driverId")
+    lap: int
+    stop: int
+    duration: str | None = None
+
+
+class PitStopsRace(BaseModel):
+    pit_stops: list[PitStopEntry] = Field(alias="PitStops")
+
+
+def pit_stop_entries(fetch: FetchJson, season: int, round_number: int) -> Iterator[PitStopEntry]:
+    for payload in pages(fetch, f"/{season}/{round_number}/pitstops.json"):
+        for race in races_in(payload, PitStopsRace):
+            yield from race.pit_stops
