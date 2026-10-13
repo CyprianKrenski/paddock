@@ -55,3 +55,13 @@ class RaceSnapshot:
     results: tuple[ResultRow, ...]
     laps: tuple[LapRow, ...]
     pit_stops: tuple[PitStopRow, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class RaceSummary:
+    season: int
+    round_number: int
+    name: str
+    circuit_name: str
+    date: date
+    ingested: bool

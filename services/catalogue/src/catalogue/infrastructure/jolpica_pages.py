@@ -138,3 +138,18 @@ def pit_stop_entries(fetch: FetchJson, season: int, round_number: int) -> Iterat
     for payload in pages(fetch, f"/{season}/{round_number}/pitstops.json"):
         for race in races_in(payload, PitStopsRace):
             yield from race.pit_stops
+
+
+class ScheduleRace(BaseModel):
+    season: int
+    round_number: int = Field(alias="round")
+    name: str = Field(alias="raceName")
+    circuit: Circuit = Field(alias="Circuit")
+    date: date
+
+
+def season_schedule(fetch: FetchJson, season: int) -> list[ScheduleRace]:
+    found: list[ScheduleRace] = []
+    for payload in pages(fetch, f"/{season}.json"):
+        found.extend(races_in(payload, ScheduleRace))
+    return found

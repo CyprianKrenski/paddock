@@ -84,3 +84,13 @@ class PitStopsRaceFactory(DictFactory):
     season = "2025"
     round = "1"
     PitStops: factory.LazyFunction[list[Any]] = factory.LazyFunction(list)
+
+
+class ScheduleRaceFactory(DictFactory):
+    season = "2025"
+    round = "1"
+    raceName = "Australian Grand Prix"
+    Circuit: factory.LazyFunction[dict[str, Any]] = factory.LazyFunction(
+        lambda: {"circuitId": "albert_park", "circuitName": "Albert Park Grand Prix Circuit"}
+    )
+    date = "2025-03-16"

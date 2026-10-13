@@ -3,6 +3,8 @@ from fastapi import FastAPI
 
 from catalogue.api.health import router as health_router
 from catalogue.api.ingest import router as ingest_router
+from catalogue.api.races import router as races_router
+from catalogue.api.seasons import router as seasons_router
 from catalogue.infrastructure.db import session_factory
 from catalogue.infrastructure.jolpica import JolpicaClient
 from catalogue.infrastructure.jolpica_cache import CachedJolpica
@@ -22,6 +24,8 @@ def create_app(settings: Settings) -> FastAPI:
     app.state.fetch = CachedJolpica(JolpicaClient(http).get_json, SqlRawResponseStore(sessions))
     app.include_router(health_router)
     app.include_router(ingest_router)
+    app.include_router(seasons_router)
+    app.include_router(races_router)
     return app
 
 
