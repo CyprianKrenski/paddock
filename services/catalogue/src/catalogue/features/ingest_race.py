@@ -14,9 +14,9 @@ from catalogue.entities.race_snapshot import (
 from catalogue.infrastructure.jolpica_pages import (
     FetchJson,
     ResultsRace,
-    lap_timings,
-    pit_stop_entries,
-    race_results,
+    fetch_lap_timings,
+    fetch_pit_stops,
+    fetch_race_results,
 )
 
 
@@ -38,7 +38,7 @@ class IngestSummary:
 def ingest_race(
     fetch: FetchJson, store: RaceStore, season: int, round_number: int
 ) -> IngestSummary:
-    results = race_results(fetch, season, round_number)
+    results = fetch_race_results(fetch, season, round_number)
     if results is None:
         raise RaceNotFound(f"season {season} round {round_number} is unknown to the source")
     snapshot = build_snapshot(results, fetch, season, round_number)
@@ -68,7 +68,7 @@ def build_snapshot(
             position=timing.position,
             time_ms=parse_lap_time(timing.time),
         )
-        for timing in lap_timings(fetch, season, round_number)
+        for timing in fetch_lap_timings(fetch, season, round_number)
     )
     pit_stops = tuple(
         PitStopRow(
@@ -77,7 +77,7 @@ def build_snapshot(
             lap=entry.lap,
             duration_ms=parse_lap_time(entry.duration),
         )
-        for entry in pit_stop_entries(fetch, season, round_number)
+        for entry in fetch_pit_stops(fetch, season, round_number)
     )
     return RaceSnapshot(
         race=RaceInfo(

@@ -1,12 +1,10 @@
 from fastapi.testclient import TestClient
-from pydantic import SecretStr
 
-from catalogue.infrastructure.settings import Settings
 from catalogue.main import create_app
 
-UNREACHABLE = Settings(
-    postgres_user="x", postgres_password=SecretStr("x"), postgres_db="x", postgres_port=1
-)
+from catalogue_tests.fakes import unreachable_settings
+
+UNREACHABLE = unreachable_settings()
 
 
 def test_live_reports_ok() -> None:

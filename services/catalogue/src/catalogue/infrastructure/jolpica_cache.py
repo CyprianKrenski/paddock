@@ -1,9 +1,15 @@
 from collections.abc import Mapping
+from typing import Protocol
 from urllib.parse import urlencode
 
-from catalogue.features.stores import RawResponseStore
-from catalogue.infrastructure.jolpica import JsonObject
+from catalogue.entities.json_object import JsonObject
 from catalogue.infrastructure.jolpica_pages import FetchJson
+
+
+class RawResponseStore(Protocol):
+    def get(self, url: str) -> JsonObject | None: ...
+
+    def put(self, url: str, body: JsonObject) -> None: ...
 
 
 def cache_key(path: str, params: Mapping[str, str | int] | None) -> str:

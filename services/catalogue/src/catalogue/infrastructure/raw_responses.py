@@ -1,13 +1,11 @@
 from datetime import UTC, datetime
-from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, sessionmaker
 
+from catalogue.entities.json_object import JsonObject
 from catalogue.entities.models import RawResponse
-
-JsonObject = dict[str, Any]
 
 
 class SqlRawResponseStore:

@@ -57,8 +57,4 @@ class SqlRaceStore:
             return
         statement = insert(model).values(rows)
         updates = {column: statement.excluded[column] for column in rows[0] if column not in key}
-        if updates:
-            statement = statement.on_conflict_do_update(index_elements=key, set_=updates)
-        else:
-            statement = statement.on_conflict_do_nothing(index_elements=key)
-        self._session.execute(statement)
+        self._session.execute(statement.on_conflict_do_update(index_elements=key, set_=updates))

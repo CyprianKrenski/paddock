@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from catalogue.entities.models import RawResponse
-from catalogue.features.stores import RawResponseStore
+from catalogue.infrastructure.jolpica_cache import RawResponseStore
 from catalogue.infrastructure.raw_responses import SqlRawResponseStore
 
 pytestmark = pytest.mark.integration

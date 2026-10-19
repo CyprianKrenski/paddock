@@ -4,7 +4,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, Field
 
-from catalogue.infrastructure.jolpica import JsonObject
+from catalogue.entities.json_object import JsonObject
 
 MAX_PAGE_SIZE = 100
 
@@ -70,7 +70,7 @@ class LapTiming(BaseModel):
     time: str | None
 
 
-def lap_timings(fetch: FetchJson, season: int, round_number: int) -> Iterator[LapTiming]:
+def fetch_lap_timings(fetch: FetchJson, season: int, round_number: int) -> Iterator[LapTiming]:
     for payload in pages(fetch, f"/{season}/{round_number}/laps.json"):
         for race in races_in(payload, LapsRace):
             for lap in race.laps:
@@ -112,15 +112,10 @@ class ResultsRace(BaseModel):
     results: list[ResultEntry] = Field(alias="Results")
 
 
-def race_results(fetch: FetchJson, season: int, round_number: int) -> ResultsRace | None:
-    found: ResultsRace | None = None
-    for payload in pages(fetch, f"/{season}/{round_number}/results.json"):
-        for race in races_in(payload, ResultsRace):
-            if found is None:
-                found = race
-            else:
-                found.results.extend(race.results)
-    return found
+def fetch_race_results(fetch: FetchJson, season: int, round_number: int) -> ResultsRace | None:
+    payload = fetch(f"/{season}/{round_number}/results.json", {"limit": MAX_PAGE_SIZE, "offset": 0})
+    races = races_in(payload, ResultsRace)
+    return races[0] if races else None
 
 
 class PitStopEntry(BaseModel):
@@ -134,7 +129,7 @@ class PitStopsRace(BaseModel):
     pit_stops: list[PitStopEntry] = Field(alias="PitStops")
 
 
-def pit_stop_entries(fetch: FetchJson, season: int, round_number: int) -> Iterator[PitStopEntry]:
+def fetch_pit_stops(fetch: FetchJson, season: int, round_number: int) -> Iterator[PitStopEntry]:
     for payload in pages(fetch, f"/{season}/{round_number}/pitstops.json"):
         for race in races_in(payload, PitStopsRace):
             yield from race.pit_stops
@@ -148,7 +143,7 @@ class ScheduleRace(BaseModel):
     date: date
 
 
-def season_schedule(fetch: FetchJson, season: int) -> list[ScheduleRace]:
+def fetch_season_schedule(fetch: FetchJson, season: int) -> list[ScheduleRace]:
     found: list[ScheduleRace] = []
     for payload in pages(fetch, f"/{season}.json"):
         found.extend(races_in(payload, ScheduleRace))

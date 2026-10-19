@@ -1,4 +1,3 @@
-from collections.abc import Mapping
 from datetime import date
 from typing import Any
 
@@ -11,7 +10,6 @@ from catalogue.entities.race_snapshot import (
     LapRow,
     PitStopRow,
     RaceInfo,
-    RaceSnapshot,
     ResultRow,
 )
 from catalogue.features.ingest_race import IngestSummary, RaceNotFound, ingest_race
@@ -20,29 +18,14 @@ from catalogue_tests.factories import (
     DriverFactory,
     EnvelopeFactory,
     LapFactory,
+    LapsRaceFactory,
     PitStopFactory,
     PitStopsRaceFactory,
-    RaceFactory,
     ResultFactory,
     ResultsRaceFactory,
     TimingFactory,
 )
-
-
-class ScriptedFetch:
-    def __init__(self, by_path: Mapping[str, dict[str, Any]]) -> None:
-        self._by_path = by_path
-
-    def __call__(self, path: str, params: Mapping[str, str | int] | None = None) -> dict[str, Any]:
-        return self._by_path[path]
-
-
-class RecordingStore:
-    def __init__(self) -> None:
-        self.saved: list[RaceSnapshot] = []
-
-    def save(self, snapshot: RaceSnapshot) -> None:
-        self.saved.append(snapshot)
+from catalogue_tests.fakes import RecordingStore, ScriptedFetch
 
 
 def envelope_with(race: dict[str, Any], total: str = "1") -> dict[str, Any]:
@@ -64,7 +47,7 @@ def test_ingest_builds_a_snapshot_from_results_laps_and_pit_stops() -> None:
             ),
         ]
     )
-    laps = RaceFactory.build(
+    laps = LapsRaceFactory.build(
         Laps=[
             LapFactory.build(number="1", Timings=[TimingFactory.build(time="1:57.099")]),
             LapFactory.build(number="2", Timings=[TimingFactory.build(time="1:30.553")]),
@@ -122,7 +105,7 @@ def test_unknown_round_raises_race_not_found_and_saves_nothing() -> None:
 
 def test_lap_for_a_driver_missing_from_results_is_malformed_source_data() -> None:
     results = ResultsRaceFactory.build(Results=[ResultFactory.build()])
-    laps = RaceFactory.build(
+    laps = LapsRaceFactory.build(
         Laps=[LapFactory.build(Timings=[TimingFactory.build(driverId="ghost")])]
     )
     fetch = ScriptedFetch(

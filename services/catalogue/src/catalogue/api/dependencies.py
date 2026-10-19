@@ -22,11 +22,7 @@ def get_fetch(request: Request) -> FetchJson:
     return fetch
 
 
-def get_race_store(session: Annotated[Session, Depends(get_session)]) -> RaceStore:
-    return SqlRaceStore(session)
-
-
-def get_schedule_store(session: Annotated[Session, Depends(get_session)]) -> ScheduleStore:
+def get_race_store(session: Annotated[Session, Depends(get_session)]) -> SqlRaceStore:
     return SqlRaceStore(session)
 
 
@@ -37,5 +33,5 @@ def get_race_reader(session: Annotated[Session, Depends(get_session)]) -> RaceRe
 DbSession = Annotated[Session, Depends(get_session)]
 Fetch = Annotated[FetchJson, Depends(get_fetch)]
 RaceStoreDep = Annotated[RaceStore, Depends(get_race_store)]
-ScheduleStoreDep = Annotated[ScheduleStore, Depends(get_schedule_store)]
+ScheduleStoreDep = Annotated[ScheduleStore, Depends(get_race_store)]
 RaceReaderDep = Annotated[RaceReader, Depends(get_race_reader)]

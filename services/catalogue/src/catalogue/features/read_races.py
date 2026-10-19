@@ -17,7 +17,7 @@ class RaceReader(Protocol):
     def pit_stops_of(self, season: int, round_number: int) -> tuple[PitStopRow, ...]: ...
 
 
-class SeasonNotFound(Exception):
+class SeasonNotLoaded(Exception):
     pass
 
 
@@ -25,14 +25,10 @@ class RaceNotIngested(Exception):
     pass
 
 
-def list_seasons(reader: RaceReader) -> tuple[int, ...]:
-    return reader.seasons()
-
-
 def list_races(reader: RaceReader, season: int) -> tuple[RaceSummary, ...]:
     races = reader.races_of(season)
     if not races:
-        raise SeasonNotFound(f"season {season} has not been loaded")
+        raise SeasonNotLoaded(f"season {season} has not been loaded")
     return races
 
 

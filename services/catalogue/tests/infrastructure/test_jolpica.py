@@ -6,8 +6,8 @@ import httpx2
 import pytest
 
 from catalogue.infrastructure.jolpica import (
-    IncorrectPayload,
     JolpicaClient,
+    MalformedResponse,
     RetriesExhausted,
     UnretryableResponse,
 )
@@ -99,5 +99,5 @@ def test_other_client_errors_are_not_retried(make_client: MakeClient, sleeps: li
 
 
 def test_non_json_body_is_malformed_payload(make_client: MakeClient) -> None:
-    with pytest.raises(IncorrectPayload, match="not JSON"):
+    with pytest.raises(MalformedResponse, match="not JSON"):
         make_client(lambda request: httpx2.Response(200, text="<html>")).get_json("/x.json")

@@ -6,7 +6,7 @@ from catalogue.entities.lap_time import LapTimeMs
 from catalogue.entities.race_snapshot import LapRow, PitStopRow, RaceSummary, ResultRow
 from catalogue.features.read_races import (
     RaceNotIngested,
-    SeasonNotFound,
+    SeasonNotLoaded,
     list_races,
     race_laps,
     race_pit_stops,
@@ -53,5 +53,5 @@ def test_unknown_race_is_not_readable() -> None:
 
 
 def test_season_without_races_is_not_found() -> None:
-    with pytest.raises(SeasonNotFound, match="1900"):
+    with pytest.raises(SeasonNotLoaded, match="1900"):
         list_races(MemoryReader(), 1900)

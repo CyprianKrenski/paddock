@@ -1,8 +1,8 @@
 import httpx2
 from fastapi import FastAPI
 
+from catalogue.api.errors import register_error_handlers
 from catalogue.api.health import router as health_router
-from catalogue.api.ingest import router as ingest_router
 from catalogue.api.races import router as races_router
 from catalogue.api.seasons import router as seasons_router
 from catalogue.infrastructure.db import session_factory
@@ -22,8 +22,8 @@ def create_app(settings: Settings) -> FastAPI:
     )
     app.state.session_factory = sessions
     app.state.fetch = CachedJolpica(JolpicaClient(http).get_json, SqlRawResponseStore(sessions))
+    register_error_handlers(app)
     app.include_router(health_router)
-    app.include_router(ingest_router)
     app.include_router(seasons_router)
     app.include_router(races_router)
     return app

@@ -4,11 +4,11 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
-from typing import Any
 
 import httpx2
 
-JsonObject = dict[str, Any]
+from catalogue.entities.json_object import JsonObject
+
 MAX_RETRY_AFTER_SECONDS = 30.0
 
 
@@ -26,7 +26,7 @@ class RetriesExhausted(UpstreamRequestFailed):
     pass
 
 
-class IncorrectPayload(UpstreamRequestFailed):
+class MalformedResponse(UpstreamRequestFailed):
     pass
 
 
@@ -75,7 +75,7 @@ def decode_json(response: httpx2.Response) -> JsonObject:
     try:
         data: JsonObject = response.json()
     except ValueError as error:
-        raise IncorrectPayload(f"not JSON from {response.request.url}") from error
+        raise MalformedResponse(f"not JSON from {response.request.url}") from error
     return data
 
 

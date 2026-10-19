@@ -11,8 +11,6 @@ else:
 
 
 class RaceTableFactory(DictFactory):
-    season = "2025"
-    round = "1"
     Races: factory.LazyFunction[list[Any]] = factory.LazyFunction(list)
 
 
@@ -38,11 +36,13 @@ class LapFactory(DictFactory):
     Timings: factory.LazyFunction[list[Any]] = factory.LazyFunction(list)
 
 
-class RaceFactory(DictFactory):
-    season = "2025"
-    round = "1"
-    raceName = "Australian Grand Prix"
+class LapsRaceFactory(DictFactory):
     Laps: factory.LazyFunction[list[Any]] = factory.LazyFunction(list)
+
+
+class CircuitFactory(DictFactory):
+    circuitId = "albert_park"
+    circuitName = "Albert Park Grand Prix Circuit"
 
 
 class DriverFactory(DictFactory):
@@ -54,7 +54,6 @@ class DriverFactory(DictFactory):
 
 class ResultFactory(DictFactory):
     position = "1"
-    positionText = "1"
     grid = "1"
     laps = "57"
     status = "Finished"
@@ -65,9 +64,7 @@ class ResultsRaceFactory(DictFactory):
     season = "2025"
     round = "1"
     raceName = "Australian Grand Prix"
-    Circuit: factory.LazyFunction[dict[str, Any]] = factory.LazyFunction(
-        lambda: {"circuitId": "albert_park", "circuitName": "Albert Park Grand Prix Circuit"}
-    )
+    Circuit: factory.SubFactory[Any, dict[str, Any]] = factory.SubFactory(CircuitFactory)
     date = "2025-03-16"
     Results: factory.LazyFunction[list[Any]] = factory.LazyFunction(list)
 
@@ -76,13 +73,10 @@ class PitStopFactory(DictFactory):
     driverId = "norris"
     lap = "2"
     stop = "1"
-    time = "15:22:58"
     duration = "13.341"
 
 
 class PitStopsRaceFactory(DictFactory):
-    season = "2025"
-    round = "1"
     PitStops: factory.LazyFunction[list[Any]] = factory.LazyFunction(list)
 
 
@@ -90,7 +84,5 @@ class ScheduleRaceFactory(DictFactory):
     season = "2025"
     round = "1"
     raceName = "Australian Grand Prix"
-    Circuit: factory.LazyFunction[dict[str, Any]] = factory.LazyFunction(
-        lambda: {"circuitId": "albert_park", "circuitName": "Albert Park Grand Prix Circuit"}
-    )
+    Circuit: factory.SubFactory[Any, dict[str, Any]] = factory.SubFactory(CircuitFactory)
     date = "2025-03-16"

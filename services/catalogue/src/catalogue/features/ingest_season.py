@@ -1,7 +1,7 @@
 from typing import Protocol
 
 from catalogue.entities.race_snapshot import RaceInfo
-from catalogue.infrastructure.jolpica_pages import FetchJson, season_schedule
+from catalogue.infrastructure.jolpica_pages import FetchJson, fetch_season_schedule
 
 
 class ScheduleStore(Protocol):
@@ -13,7 +13,7 @@ class SeasonNotFound(Exception):
 
 
 def ingest_season(fetch: FetchJson, store: ScheduleStore, season: int) -> int:
-    schedule = season_schedule(fetch, season)
+    schedule = fetch_season_schedule(fetch, season)
     if not schedule:
         raise SeasonNotFound(f"season {season} is unknown to the source")
     races = tuple(

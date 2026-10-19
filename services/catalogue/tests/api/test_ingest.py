@@ -1,56 +1,35 @@
-from collections.abc import Mapping
-from typing import Any
-
 from fastapi.testclient import TestClient
-from pydantic import SecretStr
 
 from catalogue.api.dependencies import get_fetch, get_race_store, get_session
-from catalogue.entities.race_snapshot import RaceSnapshot
-from catalogue.infrastructure.jolpica import RetriesExhausted
-from catalogue.infrastructure.settings import Settings
+from catalogue.infrastructure.jolpica_pages import FetchJson
 from catalogue.main import create_app
 
 from catalogue_tests.factories import EnvelopeFactory, ResultFactory, ResultsRaceFactory
-
-UNREACHABLE = Settings(
-    postgres_user="x", postgres_password=SecretStr("x"), postgres_db="x", postgres_port=1
-)
+from catalogue_tests.fakes import FailingFetch, RecordingStore, ScriptedFetch, unreachable_settings
 
 
-class RecordingStore:
-    def __init__(self) -> None:
-        self.saved: list[RaceSnapshot] = []
-
-    def save(self, snapshot: RaceSnapshot) -> None:
-        self.saved.append(snapshot)
-
-
-def client_with(fetch: Any, store: RecordingStore) -> TestClient:
-    app = create_app(UNREACHABLE)
+def client_with(fetch: FetchJson, store: RecordingStore) -> TestClient:
+    app = create_app(unreachable_settings())
     app.dependency_overrides[get_fetch] = lambda: fetch
     app.dependency_overrides[get_race_store] = lambda: store
     return TestClient(app)
 
 
-def scripted(by_path: Mapping[str, dict[str, Any]]) -> Any:
-    def fetch(path: str, params: Mapping[str, str | int] | None = None) -> dict[str, Any]:
-        return by_path[path]
-
-    return fetch
-
-
-def test_ingest_returns_counts() -> None:
+def one_driver_race() -> ScriptedFetch:
     race = ResultsRaceFactory.build(Results=[ResultFactory.build()])
-    fetch = scripted(
+    return ScriptedFetch(
         {
             "/2025/1/results.json": EnvelopeFactory.build(MRData__RaceTable__Races=[race]),
             "/2025/1/laps.json": EnvelopeFactory.build(MRData__total="0"),
             "/2025/1/pitstops.json": EnvelopeFactory.build(MRData__total="0"),
         }
     )
+
+
+def test_ingest_returns_counts() -> None:
     store = RecordingStore()
 
-    response = client_with(fetch, store).post("/races/2025/1/ingest")
+    response = client_with(one_driver_race(), store).post("/races/2025/1/ingest")
 
     assert response.status_code == 200
     assert response.json() == {"drivers": 1, "laps": 0, "pit_stops": 0}
@@ -58,7 +37,7 @@ def test_ingest_returns_counts() -> None:
 
 
 def test_unknown_round_is_404() -> None:
-    fetch = scripted({"/2025/99/results.json": EnvelopeFactory.build(MRData__total="0")})
+    fetch = ScriptedFetch({"/2025/99/results.json": EnvelopeFactory.build(MRData__total="0")})
 
     response = client_with(fetch, RecordingStore()).post("/races/2025/99/ingest")
 
@@ -67,10 +46,7 @@ def test_unknown_round_is_404() -> None:
 
 
 def test_source_failure_is_502() -> None:
-    def failing(path: str, params: Mapping[str, str | int] | None = None) -> dict[str, Any]:
-        raise RetriesExhausted("gave up after 4 attempts on /2025/1/results.json")
-
-    response = client_with(failing, RecordingStore()).post("/races/2025/1/ingest")
+    response = client_with(FailingFetch(), RecordingStore()).post("/races/2025/1/ingest")
 
     assert response.status_code == 502
     assert response.json() == {
@@ -84,16 +60,8 @@ class SessionWhoseCommitFails:
 
 
 def test_failed_commit_is_a_server_error_not_a_silent_200() -> None:
-    race = ResultsRaceFactory.build(Results=[ResultFactory.build()])
-    fetch = scripted(
-        {
-            "/2025/1/results.json": EnvelopeFactory.build(MRData__RaceTable__Races=[race]),
-            "/2025/1/laps.json": EnvelopeFactory.build(MRData__total="0"),
-            "/2025/1/pitstops.json": EnvelopeFactory.build(MRData__total="0"),
-        }
-    )
-    app = create_app(UNREACHABLE)
-    app.dependency_overrides[get_fetch] = lambda: fetch
+    app = create_app(unreachable_settings())
+    app.dependency_overrides[get_fetch] = lambda: one_driver_race()
     app.dependency_overrides[get_race_store] = lambda: RecordingStore()
     app.dependency_overrides[get_session] = lambda: SessionWhoseCommitFails()
 

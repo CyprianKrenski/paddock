@@ -1,27 +1,17 @@
-from collections.abc import Mapping
-from typing import Any
-
 import pytest
 from pydantic import ValidationError
 
-from catalogue.infrastructure.jolpica_pages import LapTiming, lap_timings, pages
+from catalogue.infrastructure.jolpica_pages import LapTiming, fetch_lap_timings, pages
 
-from catalogue_tests.factories import EnvelopeFactory, LapFactory, RaceFactory, TimingFactory
-
-
-class RecordingFetch:
-    def __init__(self, responses: list[dict[str, Any]]) -> None:
-        self._responses = iter(responses)
-        self.calls: list[tuple[str, Mapping[str, str | int] | None]] = []
-
-    def __call__(self, path: str, params: Mapping[str, str | int] | None = None) -> dict[str, Any]:
-        self.calls.append((path, params))
-        return next(self._responses)
+from catalogue_tests.factories import EnvelopeFactory, LapFactory, LapsRaceFactory, TimingFactory
+from catalogue_tests.fakes import ScriptedFetch
 
 
 def test_pages_walk_offsets_until_total() -> None:
-    fetch = RecordingFetch(
-        [EnvelopeFactory.build(MRData__total="250", MRData__offset=str(o)) for o in (0, 100, 200)]
+    fetch = ScriptedFetch(
+        responses=[
+            EnvelopeFactory.build(MRData__total="250", MRData__offset=str(o)) for o in (0, 100, 200)
+        ]
     )
 
     offsets = [page["MRData"]["offset"] for page in pages(fetch, "/2025/1/laps.json")]
@@ -36,7 +26,7 @@ def test_pages_walk_offsets_until_total() -> None:
 
 @pytest.mark.parametrize(("total", "calls"), [("0", 1), ("50", 1), ("200", 2), ("201", 3)])
 def test_pages_request_count_follows_total(total: str, calls: int) -> None:
-    fetch = RecordingFetch([EnvelopeFactory.build(MRData__total=total)] * 3)
+    fetch = ScriptedFetch(responses=[EnvelopeFactory.build(MRData__total=total)] * 3)
 
     list(pages(fetch, "/2025/1/laps.json"))
 
@@ -44,9 +34,9 @@ def test_pages_request_count_follows_total(total: str, calls: int) -> None:
 
 
 def test_unknown_round_yields_no_timings_instead_of_an_error() -> None:
-    fetch = RecordingFetch([EnvelopeFactory.build(MRData__total="0")])
+    fetch = ScriptedFetch(responses=[EnvelopeFactory.build(MRData__total="0")])
 
-    assert list(lap_timings(fetch, season=2025, round_number=99)) == []
+    assert list(fetch_lap_timings(fetch, season=2025, round_number=99)) == []
 
 
 def test_lap_timings_flatten_a_lap_split_across_pages() -> None:
@@ -54,7 +44,7 @@ def test_lap_timings_flatten_a_lap_split_across_pages() -> None:
         MRData__total="3",
         MRData__limit="2",
         MRData__RaceTable__Races=[
-            RaceFactory.build(
+            LapsRaceFactory.build(
                 Laps=[
                     LapFactory.build(
                         number="6",
@@ -72,7 +62,7 @@ def test_lap_timings_flatten_a_lap_split_across_pages() -> None:
         MRData__limit="2",
         MRData__offset="2",
         MRData__RaceTable__Races=[
-            RaceFactory.build(
+            LapsRaceFactory.build(
                 Laps=[
                     LapFactory.build(
                         number="6",
@@ -86,7 +76,9 @@ def test_lap_timings_flatten_a_lap_split_across_pages() -> None:
     )
 
     timings = list(
-        lap_timings(RecordingFetch([first_page, second_page]), season=2025, round_number=1)
+        fetch_lap_timings(
+            ScriptedFetch(responses=[first_page, second_page]), season=2025, round_number=1
+        )
     )
 
     assert timings == [
@@ -98,11 +90,17 @@ def test_lap_timings_flatten_a_lap_split_across_pages() -> None:
 
 def test_unexpected_payload_is_a_validation_error() -> None:
     with pytest.raises(ValidationError):
-        list(lap_timings(RecordingFetch([{"MRData": {"total": "1"}}]), season=2025, round_number=1))
+        list(
+            fetch_lap_timings(
+                ScriptedFetch(responses=[{"MRData": {"total": "1"}}]), season=2025, round_number=1
+            )
+        )
 
 
 def test_zero_limit_cannot_loop_forever() -> None:
-    fetch = RecordingFetch([EnvelopeFactory.build(MRData__total="921", MRData__limit="0")] * 3)
+    fetch = ScriptedFetch(
+        responses=[EnvelopeFactory.build(MRData__total="921", MRData__limit="0")] * 3
+    )
 
     with pytest.raises(ValidationError, match="limit"):
         list(pages(fetch, "/2025/1/laps.json"))
