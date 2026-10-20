@@ -1,6 +1,7 @@
 from typing import Protocol
 
 from catalogue.entities.race_snapshot import RaceInfo
+from catalogue.entities.units import RoundNumber, Season
 from catalogue.infrastructure.jolpica_pages import FetchJson, fetch_season_schedule
 
 
@@ -12,14 +13,14 @@ class SeasonNotFound(Exception):
     pass
 
 
-def ingest_season(fetch: FetchJson, store: ScheduleStore, season: int) -> int:
+def ingest_season(fetch: FetchJson, store: ScheduleStore, season: Season) -> int:
     schedule = fetch_season_schedule(fetch, season)
     if not schedule:
         raise SeasonNotFound(f"season {season} is unknown to the source")
     races = tuple(
         RaceInfo(
-            season=race.season,
-            round_number=race.round_number,
+            season=Season(race.season),
+            round_number=RoundNumber(race.round_number),
             name=race.name,
             circuit_id=race.circuit.circuit_id,
             circuit_name=race.circuit.circuit_name,

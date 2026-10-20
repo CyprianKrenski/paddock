@@ -1,6 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
+from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
 from catalogue.infrastructure.jolpica_pages import LapTiming, fetch_lap_timings, pages
 
 from catalogue_tests.factories import EnvelopeFactory, LapFactory, LapsRaceFactory, TimingFactory
@@ -36,7 +37,7 @@ def test_pages_request_count_follows_total(total: str, calls: int) -> None:
 def test_unknown_round_yields_no_timings_instead_of_an_error() -> None:
     fetch = ScriptedFetch(responses=[EnvelopeFactory.build(MRData__total="0")])
 
-    assert list(fetch_lap_timings(fetch, season=2025, round_number=99)) == []
+    assert list(fetch_lap_timings(fetch, season=Season(2025), round_number=RoundNumber(99))) == []
 
 
 def test_lap_timings_flatten_a_lap_split_across_pages() -> None:
@@ -77,14 +78,16 @@ def test_lap_timings_flatten_a_lap_split_across_pages() -> None:
 
     timings = list(
         fetch_lap_timings(
-            ScriptedFetch(responses=[first_page, second_page]), season=2025, round_number=1
+            ScriptedFetch(responses=[first_page, second_page]),
+            season=Season(2025),
+            round_number=RoundNumber(1),
         )
     )
 
     assert timings == [
-        LapTiming(lap=6, driver_id="norris", position=1, time="1:57.099"),
-        LapTiming(lap=6, driver_id="piastri", position=2, time="1:58.000"),
-        LapTiming(lap=6, driver_id="leclerc", position=3, time="2:00.500"),
+        LapTiming(lap=LapNumber(6), driver_id="norris", position=Position(1), time="1:57.099"),
+        LapTiming(lap=LapNumber(6), driver_id="piastri", position=Position(2), time="1:58.000"),
+        LapTiming(lap=LapNumber(6), driver_id="leclerc", position=Position(3), time="2:00.500"),
     ]
 
 
@@ -92,7 +95,9 @@ def test_unexpected_payload_is_a_validation_error() -> None:
     with pytest.raises(ValidationError):
         list(
             fetch_lap_timings(
-                ScriptedFetch(responses=[{"MRData": {"total": "1"}}]), season=2025, round_number=1
+                ScriptedFetch(responses=[{"MRData": {"total": "1"}}]),
+                season=Season(2025),
+                round_number=RoundNumber(1),
             )
         )
 

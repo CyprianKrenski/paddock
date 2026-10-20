@@ -1,0 +1,37 @@
+from analysis.entities.fastest_lap import FastestLap, fastest_lap
+from analysis.entities.rows import LapRow
+from analysis.entities.timeline import RaceTimeline
+from analysis.entities.units import LapNumber, Milliseconds, Position
+
+from analysis_tests.fakes import NORRIS, PIASTRI
+
+TIMELINE = RaceTimeline.from_laps(NORRIS + PIASTRI)
+
+
+def test_fastest_lap_of_the_whole_race() -> None:
+    assert fastest_lap(TIMELINE) == FastestLap(
+        "piastri", lap=LapNumber(2), time_ms=Milliseconds(90000)
+    )
+
+
+def test_fastest_lap_so_far_only_counts_laps_completed_before_t() -> None:
+    assert fastest_lap(TIMELINE, before_ms=Milliseconds(200_000)) == FastestLap(
+        "norris", lap=LapNumber(1), time_ms=Milliseconds(117099)
+    )
+
+
+def test_ties_go_to_the_driver_who_set_the_time_first() -> None:
+    rows = (
+        LapRow("late", LapNumber(1), Position(1), Milliseconds(100)),
+        LapRow("late", LapNumber(2), Position(1), Milliseconds(50)),
+        LapRow("early", LapNumber(1), Position(2), Milliseconds(60)),
+        LapRow("early", LapNumber(2), Position(2), Milliseconds(50)),
+    )
+
+    assert fastest_lap(RaceTimeline.from_laps(rows)) == FastestLap(
+        "early", lap=LapNumber(2), time_ms=Milliseconds(50)
+    )
+
+
+def test_no_laps_means_no_fastest_lap() -> None:
+    assert fastest_lap(RaceTimeline.from_laps(())) is None

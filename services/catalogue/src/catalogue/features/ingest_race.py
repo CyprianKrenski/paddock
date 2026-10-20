@@ -11,6 +11,7 @@ from catalogue.entities.race_snapshot import (
     RaceSnapshot,
     ResultRow,
 )
+from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
 from catalogue.infrastructure.jolpica_pages import (
     FetchJson,
     ResultsRace,
@@ -36,7 +37,7 @@ class IngestSummary:
 
 
 def ingest_race(
-    fetch: FetchJson, store: RaceStore, season: int, round_number: int
+    fetch: FetchJson, store: RaceStore, season: Season, round_number: RoundNumber
 ) -> IngestSummary:
     results = fetch_race_results(fetch, season, round_number)
     if results is None:
@@ -49,7 +50,7 @@ def ingest_race(
 
 
 def build_snapshot(
-    results: ResultsRace, fetch: FetchJson, season: int, round_number: int
+    results: ResultsRace, fetch: FetchJson, season: Season, round_number: RoundNumber
 ) -> RaceSnapshot:
     drivers = tuple(
         DriverInfo(
@@ -64,8 +65,8 @@ def build_snapshot(
     laps = tuple(
         LapRow(
             driver_id=known_driver(timing.driver_id, known),
-            lap=timing.lap,
-            position=timing.position,
+            lap=LapNumber(timing.lap),
+            position=Position(timing.position),
             time_ms=parse_lap_time(timing.time),
         )
         for timing in fetch_lap_timings(fetch, season, round_number)
@@ -74,28 +75,28 @@ def build_snapshot(
         PitStopRow(
             driver_id=known_driver(entry.driver_id, known),
             stop=entry.stop,
-            lap=entry.lap,
+            lap=LapNumber(entry.lap),
             duration_ms=parse_lap_time(entry.duration),
         )
         for entry in fetch_pit_stops(fetch, season, round_number)
     )
     return RaceSnapshot(
         race=RaceInfo(
-            season=results.season,
-            round_number=results.round_number,
+            season=Season(results.season),
+            round_number=RoundNumber(results.round_number),
             name=results.name,
             circuit_id=results.circuit.circuit_id,
             circuit_name=results.circuit.circuit_name,
             date=results.date,
-            total_laps=max((entry.laps for entry in results.results), default=None),
+            total_laps=max((LapNumber(entry.laps) for entry in results.results), default=None),
         ),
         drivers=drivers,
         results=tuple(
             ResultRow(
                 driver_id=entry.driver.driver_id,
-                position=entry.position,
-                grid=entry.grid,
-                laps=entry.laps,
+                position=Position(entry.position) if entry.position is not None else None,
+                grid=Position(entry.grid),
+                laps=LapNumber(entry.laps),
                 status=entry.status,
             )
             for entry in results.results

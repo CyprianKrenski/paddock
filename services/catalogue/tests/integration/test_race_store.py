@@ -14,6 +14,7 @@ from catalogue.entities.race_snapshot import (
     RaceSnapshot,
     ResultRow,
 )
+from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
 from catalogue.infrastructure.race_store import SqlRaceStore
 
 pytestmark = pytest.mark.integration
@@ -22,18 +23,24 @@ pytestmark = pytest.mark.integration
 def snapshot(lap_time: int) -> RaceSnapshot:
     return RaceSnapshot(
         race=RaceInfo(
-            1900, 1, "Synthetic Grand Prix", "nowhere", "Nowhere Circuit", date(1900, 1, 1), 57
+            Season(1900),
+            RoundNumber(1),
+            "Synthetic Grand Prix",
+            "nowhere",
+            "Nowhere Circuit",
+            date(1900, 1, 1),
+            LapNumber(57),
         ),
         drivers=(
             DriverInfo("norris", "NOR", "Lando", "Norris"),
             DriverInfo("hadjar", "HAD", "Isack", "Hadjar"),
         ),
         results=(
-            ResultRow("norris", 1, 1, 57, "Finished"),
-            ResultRow("hadjar", 20, 11, 0, "Retired"),
+            ResultRow("norris", Position(1), Position(1), LapNumber(57), "Finished"),
+            ResultRow("hadjar", Position(20), Position(11), LapNumber(0), "Retired"),
         ),
-        laps=(LapRow("norris", 1, 1, LapTimeMs(lap_time)),),
-        pit_stops=(PitStopRow("norris", 1, 2, LapTimeMs(13341)),),
+        laps=(LapRow("norris", LapNumber(1), Position(1), LapTimeMs(lap_time)),),
+        pit_stops=(PitStopRow("norris", 1, LapNumber(2), LapTimeMs(13341)),),
     )
 
 

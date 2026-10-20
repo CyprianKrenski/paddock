@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 
 from catalogue.entities.race_snapshot import RaceInfo
+from catalogue.entities.units import RoundNumber, Season
 from catalogue.features.ingest_season import SeasonNotFound, ingest_season
 
 from catalogue_tests.factories import EnvelopeFactory, ScheduleRaceFactory
@@ -20,13 +21,13 @@ def test_schedule_becomes_race_rows_without_total_laps() -> None:
     fetch = ScriptedFetch({"/2025.json": payload})
     store = RecordingScheduleStore()
 
-    count = ingest_season(fetch, store, season=2025)
+    count = ingest_season(fetch, store, season=Season(2025))
 
     assert count == 2
     assert fetch.calls == [("/2025.json", {"limit": 100, "offset": 0})]
     assert store.saved[0][1] == RaceInfo(
-        season=2025,
-        round_number=2,
+        season=Season(2025),
+        round_number=RoundNumber(2),
         name="Chinese Grand Prix",
         circuit_id="albert_park",
         circuit_name="Albert Park Grand Prix Circuit",
@@ -39,4 +40,4 @@ def test_unknown_season_raises() -> None:
     fetch = ScriptedFetch({"/1900.json": EnvelopeFactory.build(MRData__total="0")})
 
     with pytest.raises(SeasonNotFound, match="1900"):
-        ingest_season(fetch, RecordingScheduleStore(), season=1900)
+        ingest_season(fetch, RecordingScheduleStore(), season=Season(1900))

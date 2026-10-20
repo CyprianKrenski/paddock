@@ -5,6 +5,7 @@ from typing import Protocol
 from pydantic import BaseModel, Field
 
 from catalogue.entities.json_object import JsonObject
+from catalogue.entities.units import RoundNumber, Season
 
 MAX_PAGE_SIZE = 100
 
@@ -70,7 +71,9 @@ class LapTiming(BaseModel):
     time: str | None
 
 
-def fetch_lap_timings(fetch: FetchJson, season: int, round_number: int) -> Iterator[LapTiming]:
+def fetch_lap_timings(
+    fetch: FetchJson, season: Season, round_number: RoundNumber
+) -> Iterator[LapTiming]:
     for payload in pages(fetch, f"/{season}/{round_number}/laps.json"):
         for race in races_in(payload, LapsRace):
             for lap in race.laps:
@@ -112,7 +115,9 @@ class ResultsRace(BaseModel):
     results: list[ResultEntry] = Field(alias="Results")
 
 
-def fetch_race_results(fetch: FetchJson, season: int, round_number: int) -> ResultsRace | None:
+def fetch_race_results(
+    fetch: FetchJson, season: Season, round_number: RoundNumber
+) -> ResultsRace | None:
     payload = fetch(f"/{season}/{round_number}/results.json", {"limit": MAX_PAGE_SIZE, "offset": 0})
     races = races_in(payload, ResultsRace)
     return races[0] if races else None
@@ -129,7 +134,9 @@ class PitStopsRace(BaseModel):
     pit_stops: list[PitStopEntry] = Field(alias="PitStops")
 
 
-def fetch_pit_stops(fetch: FetchJson, season: int, round_number: int) -> Iterator[PitStopEntry]:
+def fetch_pit_stops(
+    fetch: FetchJson, season: Season, round_number: RoundNumber
+) -> Iterator[PitStopEntry]:
     for payload in pages(fetch, f"/{season}/{round_number}/pitstops.json"):
         for race in races_in(payload, PitStopsRace):
             yield from race.pit_stops
@@ -143,7 +150,7 @@ class ScheduleRace(BaseModel):
     date: date
 
 
-def fetch_season_schedule(fetch: FetchJson, season: int) -> list[ScheduleRace]:
+def fetch_season_schedule(fetch: FetchJson, season: Season) -> list[ScheduleRace]:
     found: list[ScheduleRace] = []
     for payload in pages(fetch, f"/{season}.json"):
         found.extend(races_in(payload, ScheduleRace))

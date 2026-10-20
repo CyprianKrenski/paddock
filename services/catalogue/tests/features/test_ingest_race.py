@@ -12,6 +12,7 @@ from catalogue.entities.race_snapshot import (
     RaceInfo,
     ResultRow,
 )
+from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
 from catalogue.features.ingest_race import IngestSummary, RaceNotFound, ingest_race
 
 from catalogue_tests.factories import (
@@ -63,33 +64,49 @@ def test_ingest_builds_a_snapshot_from_results_laps_and_pit_stops() -> None:
     )
     store = RecordingStore()
 
-    summary = ingest_race(fetch, store, season=2025, round_number=1)
+    summary = ingest_race(fetch, store, season=Season(2025), round_number=RoundNumber(1))
 
-    assert summary == IngestSummary(drivers=2, laps=2, pit_stops=1)
+    assert summary == IngestSummary(drivers=2, laps=LapNumber(2), pit_stops=1)
     snapshot = store.saved[0]
     assert snapshot.race == RaceInfo(
-        season=2025,
-        round_number=1,
+        season=Season(2025),
+        round_number=RoundNumber(1),
         name="Australian Grand Prix",
         circuit_id="albert_park",
         circuit_name="Albert Park Grand Prix Circuit",
         date=date(2025, 3, 16),
-        total_laps=57,
+        total_laps=LapNumber(57),
     )
     assert snapshot.drivers == (
         DriverInfo(id="norris", code="NOR", given_name="Lando", family_name="Norris"),
         DriverInfo(id="hadjar", code="HAD", given_name="Isack", family_name="Hadjar"),
     )
     assert snapshot.results == (
-        ResultRow(driver_id="norris", position=1, grid=1, laps=57, status="Finished"),
-        ResultRow(driver_id="hadjar", position=20, grid=11, laps=0, status="Retired"),
+        ResultRow(
+            driver_id="norris",
+            position=Position(1),
+            grid=Position(1),
+            laps=LapNumber(57),
+            status="Finished",
+        ),
+        ResultRow(
+            driver_id="hadjar",
+            position=Position(20),
+            grid=Position(11),
+            laps=LapNumber(0),
+            status="Retired",
+        ),
     )
     assert snapshot.laps == (
-        LapRow(driver_id="norris", lap=1, position=1, time_ms=LapTimeMs(117099)),
-        LapRow(driver_id="norris", lap=2, position=1, time_ms=LapTimeMs(90553)),
+        LapRow(
+            driver_id="norris", lap=LapNumber(1), position=Position(1), time_ms=LapTimeMs(117099)
+        ),
+        LapRow(
+            driver_id="norris", lap=LapNumber(2), position=Position(1), time_ms=LapTimeMs(90553)
+        ),
     )
     assert snapshot.pit_stops == (
-        PitStopRow(driver_id="norris", stop=1, lap=2, duration_ms=LapTimeMs(13341)),
+        PitStopRow(driver_id="norris", stop=1, lap=LapNumber(2), duration_ms=LapTimeMs(13341)),
     )
 
 
@@ -98,7 +115,7 @@ def test_unknown_round_raises_race_not_found_and_saves_nothing() -> None:
     store = RecordingStore()
 
     with pytest.raises(RaceNotFound, match="2025 round 99"):
-        ingest_race(fetch, store, season=2025, round_number=99)
+        ingest_race(fetch, store, season=Season(2025), round_number=RoundNumber(99))
 
     assert store.saved == []
 
@@ -117,4 +134,4 @@ def test_lap_for_a_driver_missing_from_results_is_malformed_source_data() -> Non
     )
 
     with pytest.raises(MalformedSourceRawData, match="ghost"):
-        ingest_race(fetch, RecordingStore(), season=2025, round_number=1)
+        ingest_race(fetch, RecordingStore(), season=Season(2025), round_number=RoundNumber(1))

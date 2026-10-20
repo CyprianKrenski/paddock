@@ -2,17 +2,18 @@ from dataclasses import dataclass
 from datetime import date
 
 from catalogue.entities.lap_time import LapTimeMs
+from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
 
 
 @dataclass(frozen=True, slots=True)
 class RaceInfo:
-    season: int
-    round_number: int
+    season: Season
+    round_number: RoundNumber
     name: str
     circuit_id: str
     circuit_name: str
     date: date
-    total_laps: int | None
+    total_laps: LapNumber | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,17 +27,17 @@ class DriverInfo:
 @dataclass(frozen=True, slots=True)
 class ResultRow:
     driver_id: str
-    position: int | None
-    grid: int
-    laps: int
+    position: Position | None
+    grid: Position
+    laps: LapNumber
     status: str
 
 
 @dataclass(frozen=True, slots=True)
 class LapRow:
     driver_id: str
-    lap: int
-    position: int
+    lap: LapNumber
+    position: Position
     time_ms: LapTimeMs | None
 
 
@@ -44,7 +45,7 @@ class LapRow:
 class PitStopRow:
     driver_id: str
     stop: int
-    lap: int
+    lap: LapNumber
     duration_ms: LapTimeMs | None
 
 
@@ -59,8 +60,8 @@ class RaceSnapshot:
 
 @dataclass(frozen=True, slots=True)
 class RaceSummary:
-    season: int
-    round_number: int
+    season: Season
+    round_number: RoundNumber
     name: str
     circuit_name: str
     date: date
