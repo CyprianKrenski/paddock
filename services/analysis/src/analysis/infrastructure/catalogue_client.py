@@ -2,11 +2,12 @@ import httpx2
 from pydantic import TypeAdapter
 
 from analysis.entities.errors import CatalogueUnavailable, RaceNotAvailable
-from analysis.entities.rows import LapRow, ResultRow
+from analysis.entities.rows import LapRow, PitStopRow, ResultRow
 from analysis.entities.units import RoundNumber, Season
 
 LAPS = TypeAdapter(list[LapRow])
 RESULTS = TypeAdapter(list[ResultRow])
+PIT_STOPS = TypeAdapter(list[PitStopRow])
 
 
 class HttpCatalogue:
@@ -18,6 +19,10 @@ class HttpCatalogue:
 
     def results_of(self, season: Season, round_number: RoundNumber) -> tuple[ResultRow, ...]:
         return tuple(RESULTS.validate_python(self._get(f"/races/{season}/{round_number}/results")))
+
+    def pit_stops_of(self, season: Season, round_number: RoundNumber) -> tuple[PitStopRow, ...]:
+        payload = self._get(f"/races/{season}/{round_number}/pit-stops")
+        return tuple(PIT_STOPS.validate_python(payload))
 
     def _get(self, path: str) -> object:
         try:

@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from catalogue.entities.lap_time import LapTimeMs
-from catalogue.entities.models import Lap, PitStop, Race, Result
+from catalogue.entities.models import Driver, Lap, PitStop, Race, Result
 from catalogue.entities.race_snapshot import LapRow, PitStopRow, RaceSummary, ResultRow
 from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
 
@@ -29,18 +29,23 @@ class SqlRaceReader:
         race = self._race(season, round_number)
         if race is None:
             return ()
-        rows = self._session.scalars(
-            select(Result).where(Result.race_id == race.id).order_by(Result.position)
+        rows = self._session.execute(
+            select(Result, Driver.code)
+            .join(Driver, Driver.id == Result.driver_id)
+            .where(Result.race_id == race.id)
+            .order_by(Result.position)
         )
         return tuple(
             ResultRow(
                 row.driver_id,
+                code,
+                row.constructor_id,
                 Position(row.position) if row.position is not None else None,
                 Position(row.grid),
                 LapNumber(row.laps),
                 row.status,
             )
-            for row in rows
+            for row, code in rows.tuples()
         )
 
     def laps_of(self, season: Season, round_number: RoundNumber) -> tuple[LapRow, ...]:

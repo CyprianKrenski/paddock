@@ -45,6 +45,7 @@ def test_ingest_builds_a_snapshot_from_results_laps_and_pit_stops() -> None:
                 Driver=DriverFactory.build(
                     driverId="hadjar", code="HAD", givenName="Isack", familyName="Hadjar"
                 ),
+                Constructor={"constructorId": "rb", "name": "RB"},
             ),
         ]
     )
@@ -84,6 +85,8 @@ def test_ingest_builds_a_snapshot_from_results_laps_and_pit_stops() -> None:
     assert snapshot.results == (
         ResultRow(
             driver_id="norris",
+            code="NOR",
+            constructor_id="mclaren",
             position=Position(1),
             grid=Position(1),
             laps=LapNumber(57),
@@ -91,6 +94,8 @@ def test_ingest_builds_a_snapshot_from_results_laps_and_pit_stops() -> None:
         ),
         ResultRow(
             driver_id="hadjar",
+            code="HAD",
+            constructor_id="rb",
             position=Position(20),
             grid=Position(11),
             laps=LapNumber(0),

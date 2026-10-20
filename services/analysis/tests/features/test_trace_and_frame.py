@@ -1,13 +1,13 @@
 from analysis.entities.fastest_lap import FastestLap
 from analysis.entities.trace import DriverTrace
-from analysis.entities.units import LapNumber, Milliseconds, RoundNumber, Season
+from analysis.entities.units import LapNumber, Milliseconds, Position, RoundNumber, Season
 from analysis.features.frame import build_frame
 from analysis.features.trace import Trace, build_trace
 
 from analysis_tests.fakes import MemorySource
 
 
-def test_trace_reports_total_laps_and_series() -> None:
+def test_trace_reports_total_laps_fastest_lap_and_series() -> None:
     trace = build_trace(MemorySource(), Season(2025), RoundNumber(1))
 
     assert trace == Trace(
@@ -16,8 +16,22 @@ def test_trace_reports_total_laps_and_series() -> None:
         LapNumber(2),
         FastestLap("piastri", LapNumber(2), Milliseconds(90000)),
         (
-            DriverTrace("norris", (Milliseconds(0), Milliseconds(0))),
-            DriverTrace("piastri", (Milliseconds(901), Milliseconds(348))),
+            DriverTrace(
+                "norris",
+                "NOR",
+                "mclaren",
+                (Position(1), Position(1)),
+                (Milliseconds(0), Milliseconds(0)),
+                (),
+            ),
+            DriverTrace(
+                "piastri",
+                "PIA",
+                "mclaren",
+                (Position(2), Position(2)),
+                (Milliseconds(901), Milliseconds(348)),
+                (LapNumber(2),),
+            ),
         ),
     )
 

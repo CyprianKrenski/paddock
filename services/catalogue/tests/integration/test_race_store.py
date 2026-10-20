@@ -36,8 +36,8 @@ def snapshot(lap_time: int) -> RaceSnapshot:
             DriverInfo("hadjar", "HAD", "Isack", "Hadjar"),
         ),
         results=(
-            ResultRow("norris", Position(1), Position(1), LapNumber(57), "Finished"),
-            ResultRow("hadjar", Position(20), Position(11), LapNumber(0), "Retired"),
+            ResultRow("norris", None, None, Position(1), Position(1), LapNumber(57), "Finished"),
+            ResultRow("hadjar", None, None, Position(20), Position(11), LapNumber(0), "Retired"),
         ),
         laps=(LapRow("norris", LapNumber(1), Position(1), LapTimeMs(lap_time)),),
         pit_stops=(PitStopRow("norris", 1, LapNumber(2), LapTimeMs(13341)),),

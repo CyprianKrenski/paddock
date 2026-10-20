@@ -43,6 +43,7 @@ class Result(Base):
     grid: Mapped[int]
     laps: Mapped[int]
     status: Mapped[str]
+    constructor_id: Mapped[str | None]
 
 
 class Lap(Base):

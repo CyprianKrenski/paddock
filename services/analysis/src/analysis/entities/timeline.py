@@ -2,13 +2,14 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 
 from analysis.entities.rows import LapRow
-from analysis.entities.units import LapNumber, Milliseconds
+from analysis.entities.units import LapNumber, Milliseconds, Position
 
 
 @dataclass(frozen=True, slots=True)
 class DriverTimeline:
     driver_id: str
     crossings: tuple[Milliseconds, ...]
+    positions: tuple[Position, ...]
 
     @property
     def laps(self) -> LapNumber:
@@ -25,23 +26,23 @@ class RaceTimeline:
 
     @classmethod
     def from_laps(cls, rows: Iterable[LapRow]) -> "RaceTimeline":
-        times: dict[str, dict[LapNumber, Milliseconds | None]] = {}
+        times: dict[str, dict[LapNumber, LapRow]] = {}
         for row in rows:
-            times.setdefault(row.driver_id, {})[row.lap] = row.time_ms
-        return cls(
-            tuple(DriverTimeline(driver_id, crossings(laps)) for driver_id, laps in times.items())
-        )
+            times.setdefault(row.driver_id, {})[row.lap] = row
+        return cls(tuple(driver_timeline(driver_id, laps) for driver_id, laps in times.items()))
 
     def leader_crossing(self, lap: LapNumber) -> Milliseconds:
         return min(driver.crossings[lap - 1] for driver in self.drivers if driver.laps >= lap)
 
 
-def crossings(laps: dict[LapNumber, Milliseconds | None]) -> tuple[Milliseconds, ...]:
+def driver_timeline(driver_id: str, laps: dict[LapNumber, LapRow]) -> DriverTimeline:
     elapsed = 0
-    result: list[Milliseconds] = []
+    crossings: list[Milliseconds] = []
+    positions: list[Position] = []
     lap = LapNumber(1)
-    while (time_ms := laps.get(lap)) is not None:
-        elapsed += time_ms
-        result.append(Milliseconds(elapsed))
+    while (row := laps.get(lap)) is not None and row.time_ms is not None:
+        elapsed += row.time_ms
+        crossings.append(Milliseconds(elapsed))
+        positions.append(row.position)
         lap = LapNumber(lap + 1)
-    return tuple(result)
+    return DriverTimeline(driver_id, tuple(crossings), tuple(positions))

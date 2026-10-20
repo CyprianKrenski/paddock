@@ -93,12 +93,17 @@ class DriverRef(BaseModel):
     family_name: str = Field(alias="familyName")
 
 
+class ConstructorRef(BaseModel):
+    constructor_id: str = Field(alias="constructorId")
+
+
 class ResultEntry(BaseModel):
     position: int | None = None
     grid: int
     laps: int
     status: str
     driver: DriverRef = Field(alias="Driver")
+    constructor: ConstructorRef | None = Field(default=None, alias="Constructor")
 
 
 class Circuit(BaseModel):

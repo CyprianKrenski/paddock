@@ -14,7 +14,17 @@ class LapRow:
 @dataclass(frozen=True, slots=True)
 class ResultRow:
     driver_id: str
+    code: str | None
+    constructor_id: str | None
     position: Position | None
     grid: Position
     laps: LapNumber
     status: str
+
+
+@dataclass(frozen=True, slots=True)
+class PitStopRow:
+    driver_id: str
+    stop: int
+    lap: LapNumber
+    duration_ms: Milliseconds | None

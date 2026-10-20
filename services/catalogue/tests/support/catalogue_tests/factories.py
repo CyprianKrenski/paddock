@@ -52,12 +52,18 @@ class DriverFactory(DictFactory):
     familyName = "Norris"
 
 
+class ConstructorFactory(DictFactory):
+    constructorId = "mclaren"
+    name = "McLaren"
+
+
 class ResultFactory(DictFactory):
     position = "1"
     grid = "1"
     laps = "57"
     status = "Finished"
     Driver: factory.SubFactory[Any, dict[str, Any]] = factory.SubFactory(DriverFactory)
+    Constructor: factory.SubFactory[Any, dict[str, Any]] = factory.SubFactory(ConstructorFactory)
 
 
 class ResultsRaceFactory(DictFactory):

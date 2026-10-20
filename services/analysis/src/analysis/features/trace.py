@@ -18,5 +18,13 @@ class Trace:
 
 def build_trace(source: RaceSource, season: Season, round_number: RoundNumber) -> Trace:
     timeline = RaceTimeline.from_laps(source.laps_of(season, round_number))
+    results = {row.driver_id: row for row in source.results_of(season, round_number)}
+    pit_stops = source.pit_stops_of(season, round_number)
     total_laps = max((driver.laps for driver in timeline.drivers), default=LapNumber(0))
-    return Trace(season, round_number, total_laps, fastest_lap(timeline), race_trace(timeline))
+    return Trace(
+        season,
+        round_number,
+        total_laps,
+        fastest_lap(timeline),
+        race_trace(timeline, results, pit_stops),
+    )

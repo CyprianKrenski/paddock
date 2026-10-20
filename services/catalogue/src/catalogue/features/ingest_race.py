@@ -94,6 +94,8 @@ def build_snapshot(
         results=tuple(
             ResultRow(
                 driver_id=entry.driver.driver_id,
+                code=entry.driver.code,
+                constructor_id=entry.constructor.constructor_id if entry.constructor else None,
                 position=Position(entry.position) if entry.position is not None else None,
                 grid=Position(entry.grid),
                 laps=LapNumber(entry.laps),

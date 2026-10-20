@@ -59,7 +59,11 @@ def test_schedule_then_ingest_marks_only_the_ingested_round(
                     LapNumber(2),
                 ),
                 drivers=(DriverInfo("norris", "NOR", "Lando", "Norris"),),
-                results=(ResultRow("norris", Position(1), Position(1), LapNumber(2), "Finished"),),
+                results=(
+                    ResultRow(
+                        "norris", None, None, Position(1), Position(1), LapNumber(2), "Finished"
+                    ),
+                ),
                 laps=(
                     LapRow("norris", LapNumber(1), Position(1), LapTimeMs(100000)),
                     LapRow("norris", LapNumber(2), Position(1), LapTimeMs(99000)),

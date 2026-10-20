@@ -27,6 +27,8 @@ class DriverInfo:
 @dataclass(frozen=True, slots=True)
 class ResultRow:
     driver_id: str
+    code: str | None
+    constructor_id: str | None
     position: Position | None
     grid: Position
     laps: LapNumber

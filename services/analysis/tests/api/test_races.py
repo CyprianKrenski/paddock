@@ -21,12 +21,18 @@ class MissingRaceSource:
     def results_of(self, season: Season, round_number: RoundNumber) -> tuple[()]:
         raise RaceNotAvailable("season 2025 round 3 has not been ingested")
 
+    def pit_stops_of(self, season: Season, round_number: RoundNumber) -> tuple[()]:
+        raise RaceNotAvailable("season 2025 round 3 has not been ingested")
+
 
 class DeadSource:
     def laps_of(self, season: Season, round_number: RoundNumber) -> tuple[()]:
         raise CatalogueUnavailable("catalogue unreachable: refused")
 
     def results_of(self, season: Season, round_number: RoundNumber) -> tuple[()]:
+        raise CatalogueUnavailable("catalogue unreachable: refused")
+
+    def pit_stops_of(self, season: Season, round_number: RoundNumber) -> tuple[()]:
         raise CatalogueUnavailable("catalogue unreachable: refused")
 
 
@@ -40,8 +46,22 @@ def test_trace_as_json() -> None:
         "total_laps": 2,
         "fastest_lap": {"driver_id": "piastri", "lap": 2, "time_ms": 90000},
         "series": [
-            {"driver_id": "norris", "gaps_ms": [0, 0]},
-            {"driver_id": "piastri", "gaps_ms": [901, 348]},
+            {
+                "driver_id": "norris",
+                "code": "NOR",
+                "team": "mclaren",
+                "positions": [1, 1],
+                "gaps_ms": [0, 0],
+                "pit_laps": [],
+            },
+            {
+                "driver_id": "piastri",
+                "code": "PIA",
+                "team": "mclaren",
+                "positions": [2, 2],
+                "gaps_ms": [901, 348],
+                "pit_laps": [2],
+            },
         ],
     }
 
