@@ -1,4 +1,4 @@
-from analysis.entities.fastest_lap import FastestLap, fastest_lap
+from analysis.entities.fastest_lap import FastestLap, fastest_by_lap, fastest_lap
 from analysis.entities.rows import LapRow
 from analysis.entities.timeline import RaceTimeline
 from analysis.entities.units import LapNumber, Milliseconds, Position
@@ -35,3 +35,10 @@ def test_ties_go_to_the_driver_who_set_the_time_first() -> None:
 
 def test_no_laps_means_no_fastest_lap() -> None:
     assert fastest_lap(RaceTimeline.from_laps(())) is None
+
+
+def test_fastest_lap_so_far_after_each_lap() -> None:
+    assert fastest_by_lap(TIMELINE) == (
+        FastestLap("norris", lap=LapNumber(1), time_ms=Milliseconds(117099)),
+        FastestLap("piastri", lap=LapNumber(2), time_ms=Milliseconds(90000)),
+    )

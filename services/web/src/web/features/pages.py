@@ -2,7 +2,8 @@ from dataclasses import dataclass
 
 from web.entities.chart import Chart, race_chart
 from web.entities.errors import NotFound
-from web.entities.units import RoundNumber, Season
+from web.entities.standings import Standings, standings_at
+from web.entities.units import LapNumber, RoundNumber, Season
 from web.entities.views import RaceSummary, Trace
 from web.features.sources import Analysis, Catalogue
 
@@ -23,6 +24,7 @@ class RacePage:
     race: RaceSummary
     trace: Trace
     chart: Chart
+    standings: Standings
 
 
 def home_page(catalogue: Catalogue) -> HomePage:
@@ -40,4 +42,12 @@ def race_page(
     if round_number not in races:
         raise NotFound(f"season {season} has no round {round_number}")
     trace = analysis.trace_of(season, round_number)
-    return RacePage(races[round_number], trace, race_chart(trace))
+    return RacePage(
+        races[round_number], trace, race_chart(trace), standings_at(trace, trace.total_laps)
+    )
+
+
+def race_standings(
+    analysis: Analysis, season: Season, round_number: RoundNumber, lap: LapNumber
+) -> Standings:
+    return standings_at(analysis.trace_of(season, round_number), lap)

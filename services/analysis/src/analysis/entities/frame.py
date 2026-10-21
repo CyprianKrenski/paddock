@@ -5,8 +5,6 @@ from analysis.entities.rows import ResultRow
 from analysis.entities.timeline import DriverTimeline, RaceTimeline
 from analysis.entities.units import Distance, DriverStatus, LapNumber, Milliseconds, Position
 
-FINISHED_STATUSES = frozenset({"Finished", "Lapped"})
-
 
 @dataclass(frozen=True, slots=True)
 class DriverState:
@@ -67,7 +65,7 @@ def replay_frame(
 
 def driver_progress(driver: DriverTimeline, result: ResultRow, at_ms: Milliseconds) -> Progress:
     if at_ms >= driver.last_crossing:
-        status = DriverStatus.FINISHED if classified(result.status) else DriverStatus.OUT
+        status = DriverStatus.FINISHED if result.classified else DriverStatus.OUT
         return Progress(
             driver,
             Distance(float(driver.laps)),
@@ -90,7 +88,3 @@ def driver_progress(driver: DriverTimeline, result: ResultRow, at_ms: Millisecon
         DriverStatus.RUNNING,
         result.grid,
     )
-
-
-def classified(status: str) -> bool:
-    return status in FINISHED_STATUSES or status.startswith("+")

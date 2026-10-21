@@ -20,10 +20,14 @@
     input { background: var(--panel); color: var(--text); border: 1px solid var(--grid); padding: 0.3rem; }
     .panorama { overflow-x: auto; background: var(--panel); border-radius: 6px; }
     svg text { font-size: 11px; fill: var(--muted); font-family: inherit; }
-    svg text.code { font-size: 12px; font-weight: 800; }
+    svg text.code { font-size: 10px; font-weight: 700; }
     .grid { stroke: var(--grid); stroke-width: 1; }
-    .legend { columns: 4; list-style: none; padding: 0; color: var(--muted); font-size: 0.85rem; }
-    .legend b { color: var(--text); }
+    .band { fill: var(--text); opacity: 0.06; }
+    .standings td.rank, .standings tr.out { color: var(--muted); }
+    .standings b { color: var(--text); }
+    .swatch { display: inline-block; width: 1em; height: 1em; vertical-align: -0.15em; border-radius: 2px; }
+    .pit { color: #15151e; background: #f2f2f2; font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 2px; margin-right: 0.4rem; }
+    .fastest { color: #c77dff; }
     footer { margin-top: 2rem; color: var(--muted); font-size: 0.8rem; letter-spacing: 0.06em; }
   </style>
 </head>

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 from analysis.entities.units import LapNumber, Milliseconds, Position
 
+FINISHED_STATUSES = frozenset({"Finished", "Lapped"})
+
 
 @dataclass(frozen=True, slots=True)
 class LapRow:
@@ -20,6 +22,10 @@ class ResultRow:
     grid: Position
     laps: LapNumber
     status: str
+
+    @property
+    def classified(self) -> bool:
+        return self.status in FINISHED_STATUSES or self.status.startswith("+")
 
 
 @dataclass(frozen=True, slots=True)

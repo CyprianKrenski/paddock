@@ -6,35 +6,69 @@
 {% if page.trace.fastest_lap %}&middot; fastest lap <b>{{ page.trace.fastest_lap.driver_id }}</b>, lap {{ page.trace.fastest_lap.lap }}, {{ "%.3f"|format(page.trace.fastest_lap.time_ms / 1000) }} s{% endif %}</p>
 <h2>Gap to leader</h2>
 <p class="hint">Scroll sideways to follow the race. Hover a dot for driver, position, lap and gap; squares mark pit stops; the ring marks the fastest lap.</p>
-<div class="panorama" style="width: {{ page.chart.viewport }}px">
+<div class="panorama" style="width: {{ page.chart.viewport }}px" data-px-per-lap="{{ page.chart.px_per_lap }}" data-margin-left="{{ page.chart.margin_left }}" data-total-laps="{{ page.trace.total_laps }}" data-standings-url="/races/{{ page.race.season }}/{{ page.race.round_number }}/standings">
 <svg width="{{ page.chart.width }}" height="{{ page.chart.height }}" viewBox="0 0 {{ page.chart.width }} {{ page.chart.height }}" role="img">
+  <defs><clipPath id="drawn"><rect id="drawn-to" x="0" y="0" width="{{ page.chart.width }}" height="{{ page.chart.height }}"/></clipPath></defs>
+  <rect id="lap-band" class="band" x="{{ page.chart.band_x }}" y="{{ page.chart.gap_ticks[0].at }}" width="{{ page.chart.px_per_lap }}" height="{{ page.chart.gap_ticks[-1].at - page.chart.gap_ticks[0].at }}"/>
 {% for tick in page.chart.gap_ticks %}
   <line class="grid" x1="{{ page.chart.lap_ticks[0].at }}" y1="{{ tick.at }}" x2="{{ page.chart.lap_ticks[-1].at }}" y2="{{ tick.at }}"/>
-  <text x="6" y="{{ tick.at + 4 }}">{{ tick.label }}</text>
+  <text x="{{ page.chart.margin_left - 56 }}" y="{{ tick.at + 4 }}">{{ tick.label }}</text>
 {% endfor %}
 {% for tick in page.chart.lap_ticks %}
   <line class="grid" x1="{{ tick.at }}" y1="{{ page.chart.gap_ticks[0].at }}" x2="{{ tick.at }}" y2="{{ page.chart.gap_ticks[-1].at }}"/>
-  <text x="{{ tick.at - 8 }}" y="{{ page.chart.height - 14 }}">L{{ tick.label }}</text>
+  <text x="{{ tick.at - 8 }}" y="{{ page.chart.height - 14 }}">{{ tick.label }}</text>
 {% endfor %}
+<g clip-path="url(#drawn)">
 {% for line in page.chart.lines %}
+  <g class="line">
   <polyline fill="none" stroke="{{ line.color }}" stroke-width="2"{% if line.dashed %} stroke-dasharray="6 4"{% endif %} points="{{ line.points }}"/>
   {% for dot in line.dots %}
   <circle cx="{{ dot.x }}" cy="{{ dot.y }}" r="3" fill="{{ line.color }}"><title>{{ dot.title }}</title></circle>
+  <text class="code" x="{{ dot.x + 5 }}" y="{{ dot.y - 5 }}" fill="{{ line.color }}">{{ line.label }}</text>
   {% endfor %}
   {% for pit in line.pits %}
   <rect x="{{ pit.x - 5 }}" y="{{ pit.y - 5 }}" width="10" height="10" fill="#fff" stroke="{{ line.color }}" stroke-width="2"><title>{{ pit.title }}</title></rect>
   {% endfor %}
-  <text class="code" x="{{ line.label_x }}" y="{{ line.label_y }}" fill="{{ line.color }}">{{ line.label }}</text>
+  </g>
 {% endfor %}
 {% if page.chart.fastest %}
   <circle cx="{{ page.chart.fastest.x }}" cy="{{ page.chart.fastest.y }}" r="8" fill="none" stroke="#c77dff" stroke-width="2.5"><title>fastest lap: {{ page.chart.fastest.driver_id }}</title></circle>
 {% endif %}
+</g>
 </svg>
 </div>
-<ul class="legend">
-{% for line in page.chart.lines %}
-  <li><span style="color: {{ line.color }}">{% if line.dashed %}&#9473;&#9473;{% else %}&#9644;{% endif %}</span> <b>{{ line.label }}</b> {{ line.driver_id }}</li>
-{% endfor %}
-</ul>
+<h2>Classification</h2>
+<p class="hint">For the lap highlighted in the middle of the chart; scroll the chart to move through the race. Retired drivers are listed last, longest run first.</p>
+<table class="standings">
+<thead><tr><th>#</th><th>Driver</th><th>Team</th><th>Gap</th><th></th></tr></thead>
+<tbody id="standings" data-lap="{{ page.standings.lap }}">
+{% with standings = page.standings %}{% include "standings.html" %}{% endwith %}
+</tbody>
+</table>
 <p><a href="/seasons/{{ page.race.season }}">&larr; Season {{ page.race.season }}</a></p>
+<script>
+(() => {
+  const panorama = document.querySelector(".panorama");
+  const rows = document.getElementById("standings");
+  const band = document.getElementById("lap-band");
+  const drawnTo = document.getElementById("drawn-to");
+  const pxPerLap = Number(panorama.dataset.pxPerLap);
+  const marginLeft = Number(panorama.dataset.marginLeft);
+  const totalLaps = Number(panorama.dataset.totalLaps);
+  let shown = Number(rows.dataset.lap);
+  const update = async () => {
+    const centre = panorama.scrollLeft + panorama.clientWidth / 2;
+    const lap = Math.min(totalLaps, Math.max(0, Math.round((centre - marginLeft) / pxPerLap)));
+    if (lap === shown) return;
+    shown = lap;
+    const x = marginLeft + lap * pxPerLap;
+    band.setAttribute("x", x - pxPerLap / 2);
+    drawnTo.setAttribute("width", x + 40);
+    const response = await fetch(`${panorama.dataset.standingsUrl}/${lap}`);
+    if (lap === shown) rows.innerHTML = await response.text();
+  };
+  panorama.addEventListener("scroll", update, { passive: true });
+  update();
+})();
+</script>
 {% endblock %}

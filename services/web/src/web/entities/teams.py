@@ -1,5 +1,35 @@
 from hashlib import sha1
 
+TEAM_NAMES = {
+    "mclaren": "McLaren",
+    "ferrari": "Ferrari",
+    "red_bull": "Red Bull",
+    "mercedes": "Mercedes",
+    "aston_martin": "Aston Martin",
+    "alpine": "Alpine",
+    "williams": "Williams",
+    "rb": "RB",
+    "sauber": "Sauber",
+    "haas": "Haas",
+    "renault": "Renault",
+    "lotus_f1": "Lotus",
+    "force_india": "Force India",
+    "racing_point": "Racing Point",
+    "toro_rosso": "Toro Rosso",
+    "alphatauri": "AlphaTauri",
+    "alfa": "Alfa Romeo",
+    "benetton": "Benetton",
+    "jordan": "Jordan",
+    "brawn": "Brawn",
+    "bmw_sauber": "BMW Sauber",
+    "toyota": "Toyota",
+    "jaguar": "Jaguar",
+    "minardi": "Minardi",
+    "tyrrell": "Tyrrell",
+    "brabham": "Brabham",
+    "lotus": "Lotus",
+}
+
 TEAM_COLORS = {
     "mclaren": "#ff8000",
     "ferrari": "#e8002d",
@@ -36,3 +66,9 @@ def team_color(team: str | None) -> str:
         return TEAM_COLORS[team]
     digest = sha1((team or "unknown").encode()).hexdigest()
     return f"#{digest[:6]}"
+
+
+def team_name(team: str | None) -> str:
+    if team is None:
+        return ""
+    return TEAM_NAMES.get(team, team.replace("_", " ").title())

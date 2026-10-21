@@ -31,3 +31,22 @@ def fastest_lap(timeline: RaceTimeline, before_ms: Milliseconds | None = None) -
     if not candidates:
         return None
     return min(candidates, key=lambda item: (item.fastest.time_ms, item.set_at)).fastest
+
+
+def fastest_by_lap(timeline: RaceTimeline) -> tuple[FastestLap, ...]:
+    best: Candidate | None = None
+    progression: list[FastestLap] = []
+    for lap in range(1, timeline.total_laps + 1):
+        candidates = [
+            Candidate(
+                FastestLap(driver.driver_id, LapNumber(lap), driver.lap_time(LapNumber(lap))),
+                driver.crossings[lap - 1],
+            )
+            for driver in timeline.drivers
+            if driver.laps >= lap
+        ]
+        lap_best = min(candidates, key=lambda item: (item.fastest.time_ms, item.set_at))
+        if best is None or lap_best.fastest.time_ms < best.fastest.time_ms:
+            best = lap_best
+        progression.append(best.fastest)
+    return tuple(progression)

@@ -36,10 +36,11 @@ def test_race_page_renders_the_svg_trace_and_fastest_lap() -> None:
     html = client_with(MemoryCatalogue()).get("/races/2025/1").text
 
     assert "<svg" in html
-    assert 'stroke-dasharray="6 4" points="64.0,399.6 244.0,174.0"' in html
+    assert 'stroke-dasharray="6 4" points="480.0,32.0 660.0,399.6 840.0,174.0"' in html
     assert "<title>[PIA] - P2\nLap 1\n+0.901</title>" in html
     assert "<title>[PIA] pit stop\nLap 2</title>" in html
-    assert 'fill="#ff8000">PIA</text>' in html
+    assert html.count('fill="#ff8000">PIA</text>') == 3
+    assert '<text class="code" x="665.0" y="394.6" fill="#ff8000">PIA</text>' in html
     assert "fastest lap <b>piastri</b>" in html
 
 
@@ -89,3 +90,38 @@ def test_upstream_down_renders_a_503_page() -> None:
 
     assert response.status_code == 503
     assert "unreachable" in response.text
+
+
+def test_race_page_has_a_classification_table_for_the_last_lap() -> None:
+    html = client_with(MemoryCatalogue()).get("/races/2025/1").text
+
+    assert '<tbody id="standings" data-lap="2">' in html
+    assert 'data-px-per-lap="180"' in html
+    assert 'data-standings-url="/races/2025/1/standings"' in html
+    assert "<td>3:27.652</td>" in html
+    assert "<td>+0.348</td>" in html
+    assert 'id="lap-band"' in html
+    assert '<g clip-path="url(#drawn)">' in html
+    teammate = "linear-gradient(90deg, #ff8000 0 33%, #000 33% 67%, #ff8000 67%)"
+    assert f'<span class="swatch" style="background: {teammate}"></span> <b>PIA</b>' in html
+    assert '<span class="swatch" style="background: #ff8000"></span> <b>NOR</b>' in html
+    assert '<span class="pit">In Pit</span>' in html
+    assert ">Finish</text>" in html
+
+
+def test_standings_fragment_renders_rows_for_the_requested_lap() -> None:
+    html = client_with(MemoryCatalogue()).get("/races/2025/1/standings/1").text
+
+    assert html.count("<tr") == 2
+    assert "<td>LAP 1</td>" in html
+    assert "<td>+0.901</td>" in html
+    assert html.count("fastest lap") == 1
+    assert "In Pit" not in html
+
+
+def test_standings_at_the_start_follow_the_grid() -> None:
+    html = client_with(MemoryCatalogue()).get("/races/2025/1/standings/0").text
+
+    assert html.index("<b>PIA</b>") < html.index("<b>NOR</b>")
+    assert "<td>START</td>" in html
+    assert "fastest lap" not in html

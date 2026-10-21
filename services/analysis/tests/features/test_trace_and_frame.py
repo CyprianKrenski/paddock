@@ -21,25 +21,35 @@ def test_trace_reports_total_laps_fastest_lap_and_series() -> None:
         Season(2025),
         RoundNumber(1),
         LapNumber(2),
-        FastestLap("piastri", LapNumber(2), Milliseconds(90000)),
+        Milliseconds(207652),
+        (
+            FastestLap("norris", LapNumber(1), Milliseconds(117099)),
+            FastestLap("piastri", LapNumber(2), Milliseconds(90000)),
+        ),
         (
             DriverTrace(
                 "norris",
                 "NOR",
                 "mclaren",
+                Position(1),
+                True,
                 (Position(1), Position(1)),
                 (Milliseconds(0), Milliseconds(0)),
+                (0, 0),
                 (),
             ),
             DriverTrace(
                 "piastri",
                 "PIA",
                 "mclaren",
+                Position(2),
+                True,
                 (Position(2), Position(2)),
                 (Milliseconds(901), Milliseconds(348)),
+                (0, 0),
                 (LapNumber(2),),
             ),
-            DriverTrace("hadjar", "HAD", "rb", (), (), ()),
+            DriverTrace("hadjar", "HAD", "rb", Position(11), False, (), (), (), ()),
         ),
     )
 

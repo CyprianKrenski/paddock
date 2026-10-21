@@ -5,8 +5,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from web.api.dependencies import AnalysisDep, CatalogueDep, Templates
 from web.entities.json_object import JsonObject
-from web.entities.units import RoundNumber, Season
-from web.features.pages import home_page, race_page, season_page
+from web.entities.units import LapNumber, RoundNumber, Season
+from web.features.pages import home_page, race_page, race_standings, season_page
 
 router = APIRouter()
 
@@ -36,6 +36,19 @@ def show_race(
 ) -> HTMLResponse:
     page = race_page(catalogue, analysis, season, round_number)
     return templates.TemplateResponse(request, "race.html", {"page": page})
+
+
+@router.get("/races/{season}/{round_number}/standings/{lap}", response_class=HTMLResponse)
+def show_standings(
+    request: Request,
+    season: Season,
+    round_number: RoundNumber,
+    lap: LapNumber,
+    analysis: AnalysisDep,
+    templates: Templates,
+) -> HTMLResponse:
+    standings = race_standings(analysis, season, round_number, lap)
+    return templates.TemplateResponse(request, "standings.html", {"standings": standings})
 
 
 @router.post("/seasons/load")
