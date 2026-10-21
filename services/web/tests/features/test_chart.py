@@ -1,6 +1,9 @@
+from dataclasses import replace
+
 from web.entities.chart import ChartPoint, Marker, Scale, Tick, gap_step_ms, race_chart
 from web.entities.teams import team_color
 from web.entities.units import Milliseconds
+from web.entities.views import DriverTrace
 
 from web_tests.fakes import TRACE
 
@@ -46,3 +49,9 @@ def test_scale_maps_laps_and_gaps_independently_of_the_trace() -> None:
     assert (scale.x(1), scale.x(53)) == (64.0, 9424.0)
     assert (scale.y(0), scale.y(120_000)) == (32.0, 440.0)
     assert len(scale.gap_ticks()) == 7
+
+
+def test_a_driver_without_laps_draws_no_line() -> None:
+    trace = replace(TRACE, series=TRACE.series + (DriverTrace("hadjar", "HAD", "rb", (), (), ()),))
+
+    assert [line.label for line in race_chart(trace).lines] == ["NOR", "PIA"]

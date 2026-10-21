@@ -62,6 +62,14 @@ def test_trace_as_json() -> None:
                 "gaps_ms": [901, 348],
                 "pit_laps": [2],
             },
+            {
+                "driver_id": "hadjar",
+                "code": "HAD",
+                "team": "rb",
+                "positions": [],
+                "gaps_ms": [],
+                "pit_laps": [],
+            },
         ],
     }
 

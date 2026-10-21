@@ -5,6 +5,8 @@ from analysis.entities.rows import ResultRow
 from analysis.entities.timeline import DriverTimeline, RaceTimeline
 from analysis.entities.units import Distance, DriverStatus, LapNumber, Milliseconds, Position
 
+FINISHED_STATUSES = frozenset({"Finished", "Lapped"})
+
 
 @dataclass(frozen=True, slots=True)
 class DriverState:
@@ -24,6 +26,17 @@ class Progress:
     lap_start: Milliseconds
     lap_ms: Milliseconds
     status: DriverStatus
+    grid: Position
+
+    @property
+    def order(self) -> tuple[bool, float, Milliseconds, bool, Position]:
+        return (
+            self.status is DriverStatus.OUT,
+            -self.distance,
+            self.lap_start,
+            self.grid == 0,
+            self.grid,
+        )
 
     def gap_to(self, leader_distance: Distance) -> Milliseconds | None:
         if self.status is not DriverStatus.RUNNING:
@@ -36,7 +49,7 @@ def replay_frame(
 ) -> tuple[DriverState, ...]:
     progress = sorted(
         (driver_progress(driver, results[driver.driver_id], at_ms) for driver in timeline.drivers),
-        key=lambda item: (-item.distance, item.lap_start),
+        key=lambda item: item.order,
     )
     leader_distance = progress[0].distance if progress else Distance(0.0)
     return tuple(
@@ -54,8 +67,7 @@ def replay_frame(
 
 def driver_progress(driver: DriverTimeline, result: ResultRow, at_ms: Milliseconds) -> Progress:
     if at_ms >= driver.last_crossing:
-        finished = result.status == "Finished" or result.status.startswith("+")
-        status = DriverStatus.FINISHED if finished else DriverStatus.OUT
+        status = DriverStatus.FINISHED if classified(result.status) else DriverStatus.OUT
         return Progress(
             driver,
             Distance(float(driver.laps)),
@@ -63,11 +75,22 @@ def driver_progress(driver: DriverTimeline, result: ResultRow, at_ms: Millisecon
             driver.last_crossing,
             Milliseconds(0),
             status,
+            result.grid,
         )
     completed = LapNumber(sum(1 for crossing in driver.crossings if crossing <= at_ms))
     lap_start = driver.crossings[completed - 1] if completed else Milliseconds(0)
     lap_ms = Milliseconds(driver.crossings[completed] - lap_start)
     fraction = (at_ms - lap_start) / lap_ms
     return Progress(
-        driver, Distance(completed + fraction), completed, lap_start, lap_ms, DriverStatus.RUNNING
+        driver,
+        Distance(completed + fraction),
+        completed,
+        lap_start,
+        lap_ms,
+        DriverStatus.RUNNING,
+        result.grid,
     )
+
+
+def classified(status: str) -> bool:
+    return status in FINISHED_STATUSES or status.startswith("+")

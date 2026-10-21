@@ -133,6 +133,8 @@ def race_chart(trace: Trace) -> Chart:
     seen_teams: set[str | None] = set()
     lines = []
     for series in trace.series:
+        if not series.positions:
+            continue
         lines.append(line_for(series, scale, dashed=series.team in seen_teams))
         seen_teams.add(series.team)
     fastest = None

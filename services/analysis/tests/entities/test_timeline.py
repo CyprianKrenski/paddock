@@ -30,3 +30,14 @@ def test_series_stops_at_the_first_missing_lap_time() -> None:
     assert RaceTimeline.from_laps(rows).drivers == (
         DriverTimeline("x", (Milliseconds(100),), (Position(1),)),
     )
+
+
+def test_known_drivers_without_laps_get_an_empty_timeline() -> None:
+    timeline = RaceTimeline.from_laps(NORRIS, driver_ids=("norris", "hadjar"))
+
+    assert timeline.drivers == (
+        DriverTimeline(
+            "norris", (Milliseconds(117099), Milliseconds(207652)), (Position(1), Position(1))
+        ),
+        DriverTimeline("hadjar", (), ()),
+    )

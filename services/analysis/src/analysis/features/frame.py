@@ -19,8 +19,8 @@ class Frame:
 def build_frame(
     source: RaceSource, season: Season, round_number: RoundNumber, at_seconds: float
 ) -> Frame:
-    timeline = RaceTimeline.from_laps(source.laps_of(season, round_number))
     results = {row.driver_id: row for row in source.results_of(season, round_number)}
+    timeline = RaceTimeline.from_laps(source.laps_of(season, round_number), driver_ids=results)
     at_ms = Milliseconds(round(at_seconds * 1000))
     states = replay_frame(timeline, results, at_ms=at_ms)
     return Frame(season, round_number, at_seconds, fastest_lap(timeline, before_ms=at_ms), states)

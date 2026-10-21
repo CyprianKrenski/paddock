@@ -25,8 +25,8 @@ class RaceTimeline:
     drivers: tuple[DriverTimeline, ...]
 
     @classmethod
-    def from_laps(cls, rows: Iterable[LapRow]) -> "RaceTimeline":
-        times: dict[str, dict[LapNumber, LapRow]] = {}
+    def from_laps(cls, rows: Iterable[LapRow], driver_ids: Iterable[str] = ()) -> "RaceTimeline":
+        times: dict[str, dict[LapNumber, LapRow]] = {driver_id: {} for driver_id in driver_ids}
         for row in rows:
             times.setdefault(row.driver_id, {})[row.lap] = row
         return cls(tuple(driver_timeline(driver_id, laps) for driver_id, laps in times.items()))
