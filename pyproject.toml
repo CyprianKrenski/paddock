@@ -2,7 +2,7 @@
 name = "paddock"
 version = "0.1.0"
 requires-python = ">=3.13"
-dependencies = ["catalogue", "analysis"]
+dependencies = ["catalogue", "analysis", "web"]
 
 [tool.uv]
 package = false
@@ -13,6 +13,7 @@ members = ["services/*"]
 [tool.uv.sources]
 catalogue = { workspace = true }
 analysis = { workspace = true }
+web = { workspace = true }
 
 [dependency-groups]
 dev = [
@@ -34,7 +35,7 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["catalogue", "analysis", "web"]
-known-local-folder = ["catalogue_tests", "analysis_tests"]
+known-local-folder = ["catalogue_tests", "analysis_tests", "web_tests"]
 
 [tool.mypy]
 cache_dir = ".cache/mypy"
@@ -47,12 +48,18 @@ mypy_path = [
     "services/catalogue/tests/support",
     "services/analysis/src",
     "services/analysis/tests/support",
+    "services/web/src",
+    "services/web/tests/support",
 ]
 exclude = ["alembic/"]
 
 [tool.pytest.ini_options]
 cache_dir = ".cache/pytest"
 testpaths = ["services"]
-pythonpath = ["services/catalogue/tests/support", "services/analysis/tests/support"]
+pythonpath = [
+    "services/catalogue/tests/support",
+    "services/analysis/tests/support",
+    "services/web/tests/support",
+]
 addopts = "--import-mode=importlib"
 markers = ["integration: needs POSTGRES_* env (uv run --env-file .env) and a running postgres"]

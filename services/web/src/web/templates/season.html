@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Paddock: season {{ page.season }}{% endblock %}
+{% block content %}
+<h1>Season {{ page.season }}</h1>
+<table>
+  <tr><th>Round</th><th>Race</th><th>Circuit</th><th>Date</th><th>Status</th></tr>
+{% for race in page.races %}
+  <tr>
+    <td>{{ race.round_number }}</td>
+    <td>{% if race.ingested %}<a href="/races/{{ race.season }}/{{ race.round_number }}">{{ race.name }}</a>{% else %}{{ race.name }}{% endif %}</td>
+    <td>{{ race.circuit_name }}</td>
+    <td>{{ race.date }}</td>
+    <td>
+      {% if race.ingested %}<span class="loaded">loaded</span>
+      {% else %}<form method="post" action="/races/{{ race.season }}/{{ race.round_number }}/load"><button type="submit">Load</button></form>
+      {% endif %}
+    </td>
+  </tr>
+{% endfor %}
+</table>
+{% endblock %}

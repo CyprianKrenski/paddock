@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Paddock{% endblock %}</title>
+  <style>
+    :root { --bg: #15151e; --panel: #1f1f2b; --text: #f2f2f2; --muted: #9a9aa6; --grid: #2e2e3d; --accent: #e10600; }
+    body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 2rem 2.5rem; background: var(--bg); color: var(--text); }
+    a { color: var(--text); }
+    nav a { text-decoration: none; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+    h1 { font-size: 2.4rem; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; margin: 1.2rem 0 0.2rem; }
+    h2 { font-size: 0.95rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin: 1.6rem 0 0.4rem; }
+    p.meta { color: var(--muted); margin: 0 0 0.4rem; }
+    p.hint { color: var(--muted); font-size: 0.85rem; }
+    table { border-collapse: collapse; margin-top: 1rem; }
+    td, th { padding: 0.45rem 1rem; border-bottom: 1px solid var(--grid); text-align: left; }
+    th { color: var(--muted); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.75rem; }
+    .loaded { color: #52e252; font-weight: 600; } .pending { color: var(--muted); }
+    button { padding: 0.3rem 0.9rem; background: var(--accent); color: #fff; border: 0; border-radius: 3px; font-weight: 700; cursor: pointer; }
+    input { background: var(--panel); color: var(--text); border: 1px solid var(--grid); padding: 0.3rem; }
+    .panorama { overflow-x: auto; background: var(--panel); border-radius: 6px; }
+    svg text { font-size: 11px; fill: var(--muted); font-family: inherit; }
+    svg text.code { font-size: 12px; font-weight: 800; }
+    .grid { stroke: var(--grid); stroke-width: 1; }
+    .legend { columns: 4; list-style: none; padding: 0; color: var(--muted); font-size: 0.85rem; }
+    .legend b { color: var(--text); }
+    footer { margin-top: 2rem; color: var(--muted); font-size: 0.8rem; letter-spacing: 0.06em; }
+  </style>
+</head>
+<body>
+  <nav><a href="/">Paddock</a></nav>
+  {% block content %}{% endblock %}
+  <footer>Data: Jolpica F1 API. Visualisation: paddock.</footer>
+</body>
+</html>

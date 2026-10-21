@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Paddock: seasons{% endblock %}
+{% block content %}
+<h1>Seasons</h1>
+<ul>
+{% for season in page.seasons %}
+  <li><a href="/seasons/{{ season }}">{{ season }}</a></li>
+{% else %}
+  <li>No seasons loaded yet.</li>
+{% endfor %}
+</ul>
+<form method="post" action="/seasons/load">
+  <label>Load season <input name="season" type="number" min="1950" max="2026" required></label>
+  <button type="submit">Load</button>
+</form>
+{% endblock %}
