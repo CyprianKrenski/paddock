@@ -52,12 +52,21 @@ class PitStopRow:
 
 
 @dataclass(frozen=True, slots=True)
+class StandingRow:
+    driver_id: str
+    position: Position
+    points: float
+    wins: int
+
+
+@dataclass(frozen=True, slots=True)
 class RaceSnapshot:
     race: RaceInfo
     drivers: tuple[DriverInfo, ...]
     results: tuple[ResultRow, ...]
     laps: tuple[LapRow, ...]
     pit_stops: tuple[PitStopRow, ...]
+    standings_before: tuple[StandingRow, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

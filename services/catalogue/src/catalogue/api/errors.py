@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from catalogue.entities.errors import MalformedSourceRawData
 from catalogue.features.ingest_race import RaceNotFound
 from catalogue.features.ingest_season import SeasonNotFound
-from catalogue.features.read_races import RaceNotIngested, SeasonNotLoaded
+from catalogue.features.read_races import RaceNotIngested, SeasonNotLoaded, StandingsNotLoaded
 from catalogue.infrastructure.jolpica import UpstreamRequestFailed
 
 
@@ -18,7 +18,13 @@ def source_failed(request: Request, error: Exception) -> JSONResponse:
 
 
 def register_error_handlers(app: FastAPI) -> None:
-    for missing in (RaceNotFound, SeasonNotFound, RaceNotIngested, SeasonNotLoaded):
+    for missing in (
+        RaceNotFound,
+        SeasonNotFound,
+        RaceNotIngested,
+        SeasonNotLoaded,
+        StandingsNotLoaded,
+    ):
         app.add_exception_handler(missing, not_found)
     for failed in (UpstreamRequestFailed, ValidationError, MalformedSourceRawData):
         app.add_exception_handler(failed, source_failed)

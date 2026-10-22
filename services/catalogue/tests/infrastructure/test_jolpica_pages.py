@@ -2,9 +2,22 @@ import pytest
 from pydantic import ValidationError
 
 from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
-from catalogue.infrastructure.jolpica_pages import LapTiming, fetch_lap_timings, pages
+from catalogue.infrastructure.jolpica_pages import (
+    LapTiming,
+    fetch_driver_standings,
+    fetch_lap_timings,
+    pages,
+)
 
-from catalogue_tests.factories import EnvelopeFactory, LapFactory, LapsRaceFactory, TimingFactory
+from catalogue_tests.factories import (
+    EnvelopeFactory,
+    LapFactory,
+    LapsRaceFactory,
+    StandingFactory,
+    StandingsEnvelopeFactory,
+    StandingsListFactory,
+    TimingFactory,
+)
 from catalogue_tests.fakes import ScriptedFetch
 
 
@@ -111,3 +124,44 @@ def test_zero_limit_cannot_loop_forever() -> None:
         list(pages(fetch, "/2025/1/laps.json"))
 
     assert len(fetch.calls) == 1
+
+
+def test_driver_standings_are_read_from_the_standings_table() -> None:
+    standings = StandingsListFactory.build(
+        DriverStandings=[
+            StandingFactory.build(),
+            StandingFactory.build(
+                position="2",
+                points="28.5",
+                wins="0",
+                Driver={
+                    "driverId": "piastri",
+                    "code": "PIA",
+                    "givenName": "Oscar",
+                    "familyName": "Piastri",
+                },
+            ),
+        ]
+    )
+    fetch = ScriptedFetch(
+        {
+            "/2025/2/driverStandings.json": StandingsEnvelopeFactory.build(
+                MRData__StandingsTable__StandingsLists=[standings]
+            )
+        }
+    )
+
+    entries = fetch_driver_standings(fetch, Season(2025), RoundNumber(2))
+
+    assert [(e.driver.driver_id, e.position, e.points, e.wins) for e in entries] == [
+        ("norris", 1, 44.0, 1),
+        ("piastri", 2, 28.5, 0),
+    ]
+
+
+def test_standings_before_the_first_round_are_empty() -> None:
+    fetch = ScriptedFetch(
+        {"/2025/0/driverStandings.json": StandingsEnvelopeFactory.build(MRData__total="0")}
+    )
+
+    assert fetch_driver_standings(fetch, Season(2025), RoundNumber(0)) == []

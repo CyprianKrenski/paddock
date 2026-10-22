@@ -160,3 +160,36 @@ def fetch_season_schedule(fetch: FetchJson, season: Season) -> list[ScheduleRace
     for payload in pages(fetch, f"/{season}.json"):
         found.extend(races_in(payload, ScheduleRace))
     return found
+
+
+class StandingEntry(BaseModel):
+    position: int | None = None
+    points: float
+    wins: int
+    driver: DriverRef = Field(alias="Driver")
+
+
+class StandingsList(BaseModel):
+    driver_standings: list[StandingEntry] = Field(alias="DriverStandings")
+
+
+class StandingsTable(BaseModel):
+    lists: list[StandingsList] = Field(alias="StandingsLists")
+
+
+class StandingsPage(BaseModel):
+    table: StandingsTable = Field(alias="StandingsTable")
+
+
+class StandingsEnvelope(BaseModel):
+    data: StandingsPage = Field(alias="MRData")
+
+
+def fetch_driver_standings(
+    fetch: FetchJson, season: Season, round_number: RoundNumber
+) -> list[StandingEntry]:
+    found: list[StandingEntry] = []
+    for payload in pages(fetch, f"/{season}/{round_number}/driverStandings.json"):
+        for standings in StandingsEnvelope.model_validate(payload).data.table.lists:
+            found.extend(standings.driver_standings)
+    return found

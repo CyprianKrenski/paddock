@@ -2,8 +2,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from catalogue.entities.lap_time import LapTimeMs
-from catalogue.entities.models import Driver, Lap, PitStop, Race, Result
-from catalogue.entities.race_snapshot import LapRow, PitStopRow, RaceSummary, ResultRow
+from catalogue.entities.models import Driver, DriverStanding, Lap, PitStop, Race, Result
+from catalogue.entities.race_snapshot import (
+    LapRow,
+    PitStopRow,
+    RaceSummary,
+    ResultRow,
+    StandingRow,
+)
 from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
 
 
@@ -70,6 +76,16 @@ class SqlRaceReader:
         return tuple(
             PitStopRow(row.driver_id, row.stop, LapNumber(row.lap), lap_time(row.duration_ms))
             for row in rows
+        )
+
+    def standings_after(self, season: Season, round_number: RoundNumber) -> tuple[StandingRow, ...]:
+        rows = self._session.scalars(
+            select(DriverStanding)
+            .where(DriverStanding.season == season, DriverStanding.round_number == round_number)
+            .order_by(DriverStanding.position)
+        )
+        return tuple(
+            StandingRow(row.driver_id, Position(row.position), row.points, row.wins) for row in rows
         )
 
     def _race(self, season: Season, round_number: RoundNumber) -> Race | None:

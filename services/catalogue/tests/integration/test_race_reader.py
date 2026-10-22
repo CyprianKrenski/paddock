@@ -11,6 +11,7 @@ from catalogue.entities.race_snapshot import (
     RaceSnapshot,
     RaceSummary,
     ResultRow,
+    StandingRow,
 )
 from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
 from catalogue.infrastructure.race_reader import SqlRaceReader
@@ -97,3 +98,40 @@ def test_schedule_then_ingest_marks_only_the_ingested_round(
             LapRow("norris", LapNumber(2), Position(1), LapTimeMs(99000)),
         )
         assert reader.laps_of(Season(1900), RoundNumber(2)) == ()
+
+
+def test_standings_before_a_round_round_trip(db_sessions: sessionmaker[Session]) -> None:
+    with db_sessions() as session:
+        store = SqlRaceStore(session)
+        reader = SqlRaceReader(session)
+        store.save(
+            RaceSnapshot(
+                race=RaceInfo(
+                    Season(1900),
+                    RoundNumber(2),
+                    "Second Grand Prix",
+                    "nowhere",
+                    "Nowhere Circuit",
+                    date(1900, 2, 1),
+                    LapNumber(1),
+                ),
+                drivers=(DriverInfo("norris", "NOR", "Lando", "Norris"),),
+                results=(
+                    ResultRow(
+                        "norris", None, None, Position(1), Position(1), LapNumber(1), "Finished"
+                    ),
+                ),
+                laps=(LapRow("norris", LapNumber(1), Position(1), LapTimeMs(100000)),),
+                pit_stops=(),
+                standings_before=(
+                    StandingRow("norris", Position(1), 25.0, 1),
+                    StandingRow("piastri", Position(2), 18.0, 0),
+                ),
+            )
+        )
+
+        assert reader.standings_after(Season(1900), RoundNumber(1)) == (
+            StandingRow("norris", Position(1), 25.0, 1),
+            StandingRow("piastri", Position(2), 18.0, 0),
+        )
+        assert reader.standings_after(Season(1900), RoundNumber(2)) == ()

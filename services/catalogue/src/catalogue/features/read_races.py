@@ -1,6 +1,12 @@
 from typing import Protocol
 
-from catalogue.entities.race_snapshot import LapRow, PitStopRow, RaceSummary, ResultRow
+from catalogue.entities.race_snapshot import (
+    LapRow,
+    PitStopRow,
+    RaceSummary,
+    ResultRow,
+    StandingRow,
+)
 from catalogue.entities.units import RoundNumber, Season
 
 
@@ -17,12 +23,20 @@ class RaceReader(Protocol):
 
     def pit_stops_of(self, season: Season, round_number: RoundNumber) -> tuple[PitStopRow, ...]: ...
 
+    def standings_after(
+        self, season: Season, round_number: RoundNumber
+    ) -> tuple[StandingRow, ...]: ...
+
 
 class SeasonNotLoaded(Exception):
     pass
 
 
 class RaceNotIngested(Exception):
+    pass
+
+
+class StandingsNotLoaded(Exception):
     pass
 
 
@@ -57,3 +71,14 @@ def race_pit_stops(
 ) -> tuple[PitStopRow, ...]:
     ingested_race(reader, season, round_number)
     return reader.pit_stops_of(season, round_number)
+
+
+def season_standings(
+    reader: RaceReader, season: Season, round_number: RoundNumber
+) -> tuple[StandingRow, ...]:
+    if round_number == 0:
+        return ()
+    rows = reader.standings_after(season, round_number)
+    if not rows:
+        raise StandingsNotLoaded(f"standings after season {season} round {round_number} not loaded")
+    return rows

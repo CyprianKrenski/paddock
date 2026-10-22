@@ -11,6 +11,7 @@ from catalogue.entities.race_snapshot import (
     PitStopRow,
     RaceInfo,
     ResultRow,
+    StandingRow,
 )
 from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
 from catalogue.features.ingest_race import IngestSummary, RaceNotFound, ingest_race
@@ -24,6 +25,9 @@ from catalogue_tests.factories import (
     PitStopsRaceFactory,
     ResultFactory,
     ResultsRaceFactory,
+    StandingFactory,
+    StandingsEnvelopeFactory,
+    StandingsListFactory,
     TimingFactory,
 )
 from catalogue_tests.fakes import RecordingStore, ScriptedFetch
@@ -140,3 +144,51 @@ def test_lap_for_a_driver_missing_from_results_is_malformed_source_data() -> Non
 
     with pytest.raises(MalformedSourceRawData, match="ghost"):
         ingest_race(fetch, RecordingStore(), season=Season(2025), round_number=RoundNumber(1))
+
+
+def test_second_round_fetches_the_standings_after_the_previous_round() -> None:
+    race = ResultsRaceFactory.build(round="2", Results=[ResultFactory.build()])
+    pointless = StandingFactory.build(
+        points="0", wins="0", positionText="-", Driver=DriverFactory.build(driverId="hadjar")
+    )
+    del pointless["position"]
+    standings = StandingsListFactory.build(DriverStandings=[StandingFactory.build(), pointless])
+    fetch = ScriptedFetch(
+        {
+            "/2025/2/results.json": envelope_with(race),
+            "/2025/2/laps.json": EnvelopeFactory.build(MRData__total="0"),
+            "/2025/2/pitstops.json": EnvelopeFactory.build(MRData__total="0"),
+            "/2025/1/driverStandings.json": StandingsEnvelopeFactory.build(
+                MRData__StandingsTable__StandingsLists=[standings]
+            ),
+        }
+    )
+    store = RecordingStore()
+
+    ingest_race(fetch, store, Season(2025), RoundNumber(2))
+
+    assert store.saved[0].standings_before == (
+        StandingRow("norris", Position(1), 44.0, 1),
+        StandingRow("hadjar", Position(2), 0.0, 0),
+    )
+
+
+def test_first_round_has_no_standings_to_fetch() -> None:
+    race = ResultsRaceFactory.build(Results=[ResultFactory.build()])
+    fetch = ScriptedFetch(
+        {
+            "/2025/1/results.json": envelope_with(race),
+            "/2025/1/laps.json": EnvelopeFactory.build(MRData__total="0"),
+            "/2025/1/pitstops.json": EnvelopeFactory.build(MRData__total="0"),
+        }
+    )
+    store = RecordingStore()
+
+    ingest_race(fetch, store, Season(2025), RoundNumber(1))
+
+    assert store.saved[0].standings_before == ()
+    assert [path for path, _ in fetch.calls] == [
+        "/2025/1/results.json",
+        "/2025/1/laps.json",
+        "/2025/1/pitstops.json",
+    ]

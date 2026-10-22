@@ -66,6 +66,17 @@ class PitStop(Base):
     duration_ms: Mapped[int | None]
 
 
+class DriverStanding(Base):
+    __tablename__ = "driver_standings"
+
+    season: Mapped[int] = mapped_column(primary_key=True)
+    round_number: Mapped[int] = mapped_column("round", primary_key=True)
+    driver_id: Mapped[str] = mapped_column(primary_key=True)
+    position: Mapped[int]
+    points: Mapped[float]
+    wins: Mapped[int]
+
+
 class RawResponse(Base):
     __tablename__ = "raw_responses"
 

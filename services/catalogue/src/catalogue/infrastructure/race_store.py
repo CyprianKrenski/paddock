@@ -4,7 +4,7 @@ from typing import Any
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from catalogue.entities.models import Driver, Lap, PitStop, Race, Result
+from catalogue.entities.models import Driver, DriverStanding, Lap, PitStop, Race, Result
 from catalogue.entities.race_snapshot import RaceInfo, RaceSnapshot, ResultRow
 
 
@@ -29,6 +29,15 @@ class SqlRaceStore:
             PitStop,
             [{"race_id": race_id, **asdict(row)} for row in snapshot.pit_stops],
             ["race_id", "driver_id", "stop"],
+        )
+        before = snapshot.race.round_number - 1
+        self._upsert(
+            DriverStanding,
+            [
+                {"season": snapshot.race.season, "round": before, **asdict(row)}
+                for row in snapshot.standings_before
+            ],
+            ["season", "round", "driver_id"],
         )
 
     def save_schedule(self, races: tuple[RaceInfo, ...]) -> None:

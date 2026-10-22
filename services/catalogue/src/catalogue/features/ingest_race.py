@@ -10,11 +10,13 @@ from catalogue.entities.race_snapshot import (
     RaceInfo,
     RaceSnapshot,
     ResultRow,
+    StandingRow,
 )
 from catalogue.entities.units import LapNumber, Position, RoundNumber, Season
 from catalogue.infrastructure.jolpica_pages import (
     FetchJson,
     ResultsRace,
+    fetch_driver_standings,
     fetch_lap_timings,
     fetch_pit_stops,
     fetch_race_results,
@@ -105,6 +107,22 @@ def build_snapshot(
         ),
         laps=laps,
         pit_stops=pit_stops,
+        standings_before=standings_before(fetch, season, round_number),
+    )
+
+
+def standings_before(
+    fetch: FetchJson, season: Season, round_number: RoundNumber
+) -> tuple[StandingRow, ...]:
+    if round_number <= 1:
+        return ()
+    return tuple(
+        StandingRow(
+            entry.driver.driver_id, Position(entry.position or rank), entry.points, entry.wins
+        )
+        for rank, entry in enumerate(
+            fetch_driver_standings(fetch, season, RoundNumber(round_number - 1)), start=1
+        )
     )
 
 

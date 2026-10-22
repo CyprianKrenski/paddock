@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
 from catalogue.api.dependencies import DbSession, Fetch, RaceReaderDep, ScheduleStoreDep
-from catalogue.entities.race_snapshot import RaceSummary
-from catalogue.entities.units import Season
+from catalogue.entities.race_snapshot import RaceSummary, StandingRow
+from catalogue.entities.units import RoundNumber, Season
 from catalogue.features.ingest_season import ingest_season
-from catalogue.features.read_races import list_races
+from catalogue.features.read_races import list_races, season_standings
 
 router = APIRouter(prefix="/seasons")
 
@@ -26,3 +26,10 @@ def ingest(
 @router.get("/{season}/races")
 def races(season: Season, reader: RaceReaderDep) -> list[RaceSummary]:
     return list(list_races(reader, season))
+
+
+@router.get("/{season}/standings/{round_number}")
+def standings(
+    season: Season, round_number: RoundNumber, reader: RaceReaderDep
+) -> list[StandingRow]:
+    return list(season_standings(reader, season, round_number))

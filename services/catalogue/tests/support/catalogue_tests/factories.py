@@ -92,3 +92,34 @@ class ScheduleRaceFactory(DictFactory):
     raceName = "Australian Grand Prix"
     Circuit: factory.SubFactory[Any, dict[str, Any]] = factory.SubFactory(CircuitFactory)
     date = "2025-03-16"
+
+
+class StandingFactory(DictFactory):
+    position = "1"
+    points = "44"
+    wins = "1"
+    Driver: factory.SubFactory[Any, dict[str, Any]] = factory.SubFactory(DriverFactory)
+
+
+class StandingsListFactory(DictFactory):
+    season = "2025"
+    round = "1"
+    DriverStandings: factory.LazyFunction[list[Any]] = factory.LazyFunction(list)
+
+
+class StandingsTableFactory(DictFactory):
+    season = "2025"
+    StandingsLists: factory.LazyFunction[list[Any]] = factory.LazyFunction(list)
+
+
+class StandingsMRDataFactory(DictFactory):
+    limit = "100"
+    offset = "0"
+    total = "1"
+    StandingsTable: factory.SubFactory[Any, dict[str, Any]] = factory.SubFactory(
+        StandingsTableFactory
+    )
+
+
+class StandingsEnvelopeFactory(DictFactory):
+    MRData: factory.SubFactory[Any, dict[str, Any]] = factory.SubFactory(StandingsMRDataFactory)
