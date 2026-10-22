@@ -2,7 +2,7 @@ from typing import Protocol
 
 from web.entities.json_object import JsonObject
 from web.entities.units import RoundNumber, Season
-from web.entities.views import RaceSummary, Trace
+from web.entities.views import RaceSummary, Replay, StandingBefore, Trace
 
 
 class Catalogue(Protocol):
@@ -14,6 +14,10 @@ class Catalogue(Protocol):
 
     def load_race(self, season: Season, round_number: RoundNumber) -> None: ...
 
+    def standings_of(
+        self, season: Season, round_number: RoundNumber
+    ) -> tuple[StandingBefore, ...]: ...
+
 
 class Analysis(Protocol):
     def trace_of(self, season: Season, round_number: RoundNumber) -> Trace: ...
@@ -21,3 +25,5 @@ class Analysis(Protocol):
     def frame_of(
         self, season: Season, round_number: RoundNumber, at_seconds: float
     ) -> JsonObject: ...
+
+    def replay_of(self, season: Season, round_number: RoundNumber) -> Replay: ...

@@ -7,7 +7,7 @@
 {% for race in page.races %}
   <tr>
     <td>{{ race.round_number }}</td>
-    <td>{% if race.ingested %}<a href="/races/{{ race.season }}/{{ race.round_number }}">{{ race.name }}</a>{% else %}{{ race.name }}{% endif %}</td>
+    <td>{% if race.ingested %}<a href="/races/{{ race.season }}/{{ race.round_number }}/replay">{{ race.name }}</a> <a href="/races/{{ race.season }}/{{ race.round_number }}" class="muted">trace</a>{% else %}{{ race.name }}{% endif %}</td>
     <td>{{ race.circuit_name }}</td>
     <td>{{ race.date }}</td>
     <td>

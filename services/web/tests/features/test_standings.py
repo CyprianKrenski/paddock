@@ -36,11 +36,11 @@ def test_running_drivers_by_position_then_retired_by_laps_completed() -> None:
     assert standings_at(RACE, LapNumber(2)) == Standings(
         LapNumber(2),
         (
-            StandingRow(1, "NOR", "McLaren", "#ff8000", False, "3:27.652", False, False),
-            StandingRow(2, "PIA", "McLaren", "#ff8000", True, "+0.348", True, True),
-            StandingRow(3, "STR", "Aston Martin", "#229971", False, "+1 Lap", False, False),
-            StandingRow(4, "LAW", "Red Bull", "#3671c6", False, "Out", False, False),
-            StandingRow(5, "HAD", "RB", "#6692ff", False, "Out", False, False),
+            StandingRow(1, "NOR", "McLaren", "#ff8000", False, "3:27.652", False, False, 1),
+            StandingRow(2, "PIA", "McLaren", "#ff8000", True, "+0.348", True, True, -1),
+            StandingRow(3, "STR", "Aston Martin", "#229971", False, "+1 Lap", False, False, 6),
+            StandingRow(4, "LAW", "Red Bull", "#3671c6", False, "Out", False, False, 1),
+            StandingRow(5, "HAD", "RB", "#6692ff", False, "Out", False, False, 6),
         ),
     )
 

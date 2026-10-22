@@ -1,4 +1,6 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import Protocol
 
 from web.entities.teams import team_color
 from web.entities.units import Milliseconds, Position
@@ -114,12 +116,20 @@ def gap_step_ms(max_gap_ms: int) -> Milliseconds:
     return Milliseconds(GAP_STEPS_SECONDS[-1] * 1000)
 
 
-def line_styles(trace: Trace) -> dict[str, LineStyle]:
+class TeamMember(Protocol):
+    @property
+    def driver_id(self) -> str: ...
+
+    @property
+    def team(self) -> str | None: ...
+
+
+def line_styles(drivers: Iterable[TeamMember]) -> dict[str, LineStyle]:
     seen_teams: set[str | None] = set()
     styles = {}
-    for series in trace.series:
-        styles[series.driver_id] = LineStyle(team_color(series.team), series.team in seen_teams)
-        seen_teams.add(series.team)
+    for driver in drivers:
+        styles[driver.driver_id] = LineStyle(team_color(driver.team), driver.team in seen_teams)
+        seen_teams.add(driver.team)
     return styles
 
 
@@ -163,7 +173,7 @@ def line_for(series: DriverTrace, scale: Scale, style: LineStyle, drivers: int) 
 
 def race_chart(trace: Trace) -> Chart:
     scale = Scale.for_trace(trace)
-    styles = line_styles(trace)
+    styles = line_styles(trace.series)
     lines = tuple(
         line_for(series, scale, styles[series.driver_id], len(trace.series))
         for series in trace.series

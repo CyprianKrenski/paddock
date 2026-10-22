@@ -6,7 +6,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from web.api.dependencies import AnalysisDep, CatalogueDep, Templates
 from web.entities.json_object import JsonObject
 from web.entities.units import LapNumber, RoundNumber, Season
-from web.features.pages import home_page, race_page, race_standings, season_page
+from web.features.pages import (
+    home_page,
+    race_championship,
+    race_page,
+    race_standings,
+    replay_page,
+    season_page,
+)
 
 router = APIRouter()
 
@@ -38,6 +45,19 @@ def show_race(
     return templates.TemplateResponse(request, "race.html", {"page": page})
 
 
+@router.get("/races/{season}/{round_number}/replay", response_class=HTMLResponse)
+def show_replay(
+    request: Request,
+    season: Season,
+    round_number: RoundNumber,
+    catalogue: CatalogueDep,
+    analysis: AnalysisDep,
+    templates: Templates,
+) -> HTMLResponse:
+    page = replay_page(catalogue, analysis, season, round_number)
+    return templates.TemplateResponse(request, "replay.html", {"page": page})
+
+
 @router.get("/races/{season}/{round_number}/standings/{lap}", response_class=HTMLResponse)
 def show_standings(
     request: Request,
@@ -49,6 +69,20 @@ def show_standings(
 ) -> HTMLResponse:
     standings = race_standings(analysis, season, round_number, lap)
     return templates.TemplateResponse(request, "standings.html", {"standings": standings})
+
+
+@router.get("/races/{season}/{round_number}/championship/{lap}", response_class=HTMLResponse)
+def show_championship(
+    request: Request,
+    season: Season,
+    round_number: RoundNumber,
+    lap: LapNumber,
+    catalogue: CatalogueDep,
+    analysis: AnalysisDep,
+    templates: Templates,
+) -> HTMLResponse:
+    rows = race_championship(catalogue, analysis, season, round_number, lap)
+    return templates.TemplateResponse(request, "championship.html", {"rows": rows})
 
 
 @router.post("/seasons/load")

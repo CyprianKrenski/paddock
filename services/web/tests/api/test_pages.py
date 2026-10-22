@@ -27,7 +27,7 @@ def test_home_lists_seasons() -> None:
 def test_season_page_shows_load_button_only_for_pending_rounds() -> None:
     html = client_with(MemoryCatalogue()).get("/seasons/2025").text
 
-    assert '<a href="/races/2025/1">Australian Grand Prix</a>' in html
+    assert '<a href="/races/2025/1/replay">Australian Grand Prix</a>' in html
     assert 'action="/races/2025/2/load"' in html
     assert 'action="/races/2025/1/load"' not in html
 
@@ -125,3 +125,52 @@ def test_standings_at_the_start_follow_the_grid() -> None:
     assert html.index("<b>PIA</b>") < html.index("<b>NOR</b>")
     assert "<td>START</td>" in html
     assert "fastest lap" not in html
+
+
+def test_replay_page_embeds_keyframes_and_the_script() -> None:
+    html = client_with(MemoryCatalogue()).get("/races/2025/1/replay").text
+
+    assert '<script type="application/json" id="replay-data">' in html
+    assert '"keyframes": [[0, 0.0, false], [117099, 1.0, false], [207652, 2.0, false]]' in html
+    assert 'data-standings-url="/races/2025/1/standings"' in html
+    assert 'data-championship-url="/races/2025/1/championship"' in html
+    assert '<input type="range" id="time" min="0" max="213000"' in html
+    assert ">P3</text>" in html
+    assert 'id="moment"' in html and 'id="chequered"' in html
+    assert '<button type="button" data-mode="championship">' in html
+    assert '<button type="button" id="play">Play</button>' in html
+    assert '<option value="120" selected>120x</option>' in html
+    assert "1x" not in html.split("<select")[1].split("</select>")[0]
+
+
+def test_race_trace_is_marked_as_the_fallback_view() -> None:
+    html = client_with(MemoryCatalogue()).get("/races/2025/1").text
+
+    assert '<a href="/races/2025/1/replay">replay</a>' in html
+    assert "fallback" in html
+
+
+def test_season_page_links_to_the_replay() -> None:
+    html = client_with(MemoryCatalogue()).get("/seasons/2025").text
+
+    assert '<a href="/races/2025/1/replay">Australian Grand Prix</a>' in html
+    assert '<a href="/races/2025/1" class="muted">trace</a>' in html
+
+
+def test_championship_fragment_projects_points_for_the_lap() -> None:
+    html = client_with(MemoryCatalogue()).get("/races/2025/2/championship/2").text
+
+    assert html.count("<tr") == 4
+    assert '<td>50 <span class="gained">+25</span></td>' in html
+    assert html.count('<span class="gain">+1</span>') == 2
+    assert '<span class="loss">-2</span>' in html
+    assert html.count('<span class="same">&ndash;</span>') == 1
+    assert "<b>HAD</b>" in html and "<b>LAW</b>" in html
+
+
+def test_standings_fragment_shows_places_gained_since_the_grid() -> None:
+    html = client_with(MemoryCatalogue()).get("/races/2025/1/standings/2").text
+
+    assert html.count('<span class="gain">+1</span>') == 1
+    assert html.count('<span class="loss">-1</span>') == 1
+    assert '<span class="same">&ndash;</span>' not in html

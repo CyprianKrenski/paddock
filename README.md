@@ -22,7 +22,24 @@ One `Dockerfile` builds any service (`--build-arg SERVICE=catalogue|analysis|web
 
 ```bash
 docker compose up --build -d        # postgres, one-shot migrate, catalogue :8000, analysis :8001, web :8080
-open http://localhost:8080          # load a season, load a race, open its race trace
+open http://localhost:8080          # load a season, load a race, open its replay (race trace kept as a fallback view)
 docker compose logs -f web
 scripts/build-push.sh <dockerhub-user> 0.1.0   # multi-arch images for Kubernetes (needs docker login)
+```
+
+## Kubernetes (Docker Desktop)
+
+```bash
+source scripts/kube-env.sh          # writes ~/.kube/paddock with the docker-desktop context only
+kubectl apply -f k8s/00-namespace.yaml
+kubectl create secret generic paddock-secret --from-literal=POSTGRES_PASSWORD=<password>
+kubectl apply -f k8s/
+kubectl get pods -w
+```
+
+The secret is never stored in the repository. Deleting the manifests keeps the Postgres volume:
+
+```bash
+kubectl delete -f k8s/postgres.yaml && kubectl apply -f k8s/postgres.yaml   # data survives
+kubectl delete pvc data-postgres-0                                           # drops the data
 ```

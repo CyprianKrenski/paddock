@@ -5,8 +5,8 @@ import httpx2
 import pytest
 
 from web.entities.errors import NotFound, UpstreamDown
-from web.entities.units import RoundNumber, Season
-from web.entities.views import RaceSummary
+from web.entities.units import Distance, LapNumber, Milliseconds, Position, RoundNumber, Season
+from web.entities.views import DriverReplay, Keyframe, RaceSummary, Replay, StandingBefore
 from web.infrastructure.clients import HttpAnalysis, HttpCatalogue
 
 Handler = Callable[[httpx2.Request], httpx2.Response]
@@ -79,3 +79,56 @@ def test_frame_query_carries_t() -> None:
         "at_seconds": 200.0,
         "drivers": [],
     }
+
+
+def test_replay_is_parsed_into_keyframes() -> None:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        assert request.url.path == "/races/2025/1/replay"
+        return httpx2.Response(
+            200,
+            json={
+                "season": 2025,
+                "round_number": 1,
+                "total_laps": 1,
+                "fastest_laps": [],
+                "drivers": [
+                    {
+                        "driver_id": "x",
+                        "code": None,
+                        "team": None,
+                        "grid": 0,
+                        "classified": False,
+                        "keyframes": [{"at_ms": 0, "distance": 0.0, "in_pit": False}],
+                    }
+                ],
+            },
+        )
+
+    assert HttpAnalysis(http(handler)).replay_of(Season(2025), RoundNumber(1)) == Replay(
+        Season(2025),
+        RoundNumber(1),
+        LapNumber(1),
+        (),
+        (
+            DriverReplay(
+                "x",
+                None,
+                None,
+                Position(0),
+                False,
+                (Keyframe(Milliseconds(0), Distance(0.0), False),),
+            ),
+        ),
+    )
+
+
+def test_standings_before_a_round_are_parsed() -> None:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        assert request.url.path == "/seasons/2025/standings/2"
+        return httpx2.Response(
+            200, json=[{"driver_id": "norris", "position": 1, "points": 44, "wins": 1}]
+        )
+
+    assert HttpCatalogue(http(handler)).standings_of(Season(2025), RoundNumber(2)) == (
+        StandingBefore("norris", Position(1), 44.0, 1),
+    )

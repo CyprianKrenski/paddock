@@ -28,6 +28,30 @@
     .swatch { display: inline-block; width: 1em; height: 1em; vertical-align: -0.15em; border-radius: 2px; }
     .pit { color: #15151e; background: #f2f2f2; font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 2px; margin-right: 0.4rem; }
     .fastest { color: #c77dff; }
+    a.muted { color: var(--muted); font-size: 0.8rem; margin-left: 0.5rem; }
+    .gain { color: #52e252; font-weight: 700; } .loss { color: #ff5a5a; font-weight: 700; } .same { color: var(--muted); } .gained { color: var(--muted); font-size: 0.8rem; }
+    .replay-wrap { display: flex; align-items: flex-start; gap: 1.5rem; }
+    .replay-main { flex: 1 1 0; min-width: 0; }
+    .replay-side { flex: 0 0 420px; }
+    .replay-side table { margin-top: 0.4rem; width: 100%; }
+    .replay-side td, .replay-side th { padding: 0.3rem 0.5rem; }
+    .scene-wrap { display: flex; align-items: flex-start; }
+    .scene-wrap svg.rows { flex: none; }
+    .scene-wrap svg.rows text { font-size: 11px; font-weight: 700; fill: var(--muted); }
+    .stage { flex: 1 1 0; min-width: 0; background: var(--panel); border-radius: 6px; overflow: hidden; }
+    .replay text.code { font-size: 11px; font-weight: 800; }
+    .replay text.gap, .replay tspan.gap { font-size: 11px; font-weight: 600; fill: var(--text); }
+    .replay text.finished { font-size: 12px; }
+    .replay text.badge { font-size: 9px; font-weight: 800; fill: #15151e; }
+    .replay .out { opacity: 0.35; }
+    .replay polyline { fill: none; stroke-width: 2; opacity: 0.6; }
+    input[type=range] { width: 100%; margin: 0.6rem 0; accent-color: var(--accent); }
+    .toggle { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
+    .controls { display: flex; align-items: center; gap: 0.6rem; }
+    .controls select { background: var(--panel); color: var(--text); border: 1px solid var(--grid); padding: 0.3rem; }
+    .clock { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .toggle button { background: var(--panel); color: var(--muted); border: 1px solid var(--grid); }
+    .toggle button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
     footer { margin-top: 2rem; color: var(--muted); font-size: 0.8rem; letter-spacing: 0.06em; }
   </style>
 </head>

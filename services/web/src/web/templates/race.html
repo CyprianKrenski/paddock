@@ -4,6 +4,7 @@
 <h1>{{ page.race.name }} {{ page.race.season }}</h1>
 <p class="meta">{{ page.race.circuit_name }} &middot; {{ page.race.date }} &middot; {{ page.trace.total_laps }} laps
 {% if page.trace.fastest_lap %}&middot; fastest lap <b>{{ page.trace.fastest_lap.driver_id }}</b>, lap {{ page.trace.fastest_lap.lap }}, {{ "%.3f"|format(page.trace.fastest_lap.time_ms / 1000) }} s{% endif %}</p>
+<p class="hint">Race trace, kept as a fallback view. The <a href="/races/{{ page.race.season }}/{{ page.race.round_number }}/replay">replay</a> is the main view of this race.</p>
 <h2>Gap to leader</h2>
 <p class="hint">Scroll sideways to follow the race. Hover a dot for driver, position, lap and gap; squares mark pit stops; the ring marks the fastest lap.</p>
 <div class="panorama" style="width: {{ page.chart.viewport }}px" data-px-per-lap="{{ page.chart.px_per_lap }}" data-margin-left="{{ page.chart.margin_left }}" data-total-laps="{{ page.trace.total_laps }}" data-standings-url="/races/{{ page.race.season }}/{{ page.race.round_number }}/standings">
@@ -40,7 +41,7 @@
 <h2>Classification</h2>
 <p class="hint">For the lap highlighted in the middle of the chart; scroll the chart to move through the race. Retired drivers are listed last, longest run first.</p>
 <table class="standings">
-<thead><tr><th>#</th><th>Driver</th><th>Team</th><th>Gap</th><th></th></tr></thead>
+<thead><tr><th>#</th><th>Driver</th><th>Team</th><th>Gap</th><th></th><th></th></tr></thead>
 <tbody id="standings" data-lap="{{ page.standings.lap }}">
 {% with standings = page.standings %}{% include "standings.html" %}{% endwith %}
 </tbody>

@@ -1,0 +1,9 @@
+{% for row in rows %}
+<tr>
+  <td class="rank">{{ row.rank }}</td>
+  <td><span class="swatch" style="background: {% if row.dashed %}linear-gradient(90deg, {{ row.color }} 0 33%, #000 33% 67%, {{ row.color }} 67%){% else %}{{ row.color }}{% endif %}"></span> <b>{{ row.code }}</b></td>
+  <td>{{ row.team }}</td>
+  <td>{{ "%g"|format(row.points) }}{% if row.gained %} <span class="gained">+{{ row.gained }}</span>{% endif %}</td>
+  <td>{% if row.delta is none %}<span class="same">new</span>{% elif row.delta > 0 %}<span class="gain">+{{ row.delta }}</span>{% elif row.delta < 0 %}<span class="loss">{{ row.delta }}</span>{% else %}<span class="same">&ndash;</span>{% endif %}</td>
+</tr>
+{% endfor %}

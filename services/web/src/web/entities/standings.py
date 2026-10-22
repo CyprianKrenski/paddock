@@ -16,6 +16,7 @@ class StandingRow:
     cell: str
     fastest: bool
     in_pit: bool
+    delta: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,7 +27,7 @@ class Standings:
 
 def standings_at(trace: Trace, lap: LapNumber) -> Standings:
     lap = LapNumber(max(0, min(lap, trace.total_laps)))
-    styles = line_styles(trace)
+    styles = line_styles(trace.series)
     fastest = trace.fastest_by_lap[lap - 1].driver_id if lap else None
     rows = tuple(
         StandingRow(
@@ -38,6 +39,7 @@ def standings_at(trace: Trace, lap: LapNumber) -> Standings:
             cell_for(trace, series, lap, leader=rank == 1),
             series.driver_id == fastest,
             lap in series.pit_laps,
+            start_position(series, len(trace.series)) - rank,
         )
         for rank, series in enumerate(order_at(trace, lap), start=1)
     )
@@ -83,3 +85,7 @@ def race_time_text(time_ms: Milliseconds) -> str:
     if hours:
         return f"{hours}:{minutes:02d}:{seconds:06.3f}"
     return f"{minutes}:{seconds:06.3f}"
+
+
+def start_position(series: DriverTrace, field: int) -> int:
+    return series.grid if series.grid else field
