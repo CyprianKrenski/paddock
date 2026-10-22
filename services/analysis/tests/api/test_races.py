@@ -112,3 +112,25 @@ def test_frame_as_json() -> None:
 def test_missing_race_is_404_and_dead_catalogue_is_503() -> None:
     assert client_with(MissingRaceSource()).get("/races/2025/3/trace").status_code == 404
     assert client_with(DeadSource()).get("/races/2025/1/trace").status_code == 503
+
+
+def test_replay_as_json() -> None:
+    response = client_with(MemorySource()).get("/races/2025/1/replay")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total_laps"] == 2
+    assert body["fastest_laps"][-1] == {
+        "at_ms": 208000,
+        "driver_id": "piastri",
+        "lap": 2,
+        "time_ms": 90000,
+    }
+    assert body["drivers"][2] == {
+        "driver_id": "hadjar",
+        "code": "HAD",
+        "team": "rb",
+        "grid": 11,
+        "classified": False,
+        "keyframes": [{"at_ms": 0, "distance": 0.0, "in_pit": False}],
+    }

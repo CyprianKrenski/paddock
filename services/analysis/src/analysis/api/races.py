@@ -5,6 +5,7 @@ from fastapi import APIRouter, Query
 from analysis.api.dependencies import Source
 from analysis.entities.units import RoundNumber, Season
 from analysis.features.frame import Frame, build_frame
+from analysis.features.replay import Replay, build_replay
 from analysis.features.trace import Trace, build_trace
 
 router = APIRouter(prefix="/races")
@@ -20,3 +21,8 @@ def frame(
     season: Season, round_number: RoundNumber, source: Source, t: Annotated[float, Query(ge=0)]
 ) -> Frame:
     return build_frame(source, season, round_number, at_seconds=t)
+
+
+@router.get("/{season}/{round_number}/replay")
+def replay(season: Season, round_number: RoundNumber, source: Source) -> Replay:
+    return build_replay(source, season, round_number)

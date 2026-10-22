@@ -3,7 +3,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 from analysis.entities.rows import PitStopRow, ResultRow
-from analysis.entities.timeline import RaceTimeline
+from analysis.entities.timeline import DriverTimeline, RaceTimeline
 from analysis.entities.units import LapNumber, Milliseconds, Position
 
 
@@ -28,22 +28,31 @@ def race_trace(
         pits.setdefault(stop.driver_id, []).append(stop.lap)
     leaders = timeline.leader_crossings()
     return tuple(
-        DriverTrace(
-            driver.driver_id,
-            results[driver.driver_id].code if driver.driver_id in results else None,
-            results[driver.driver_id].constructor_id if driver.driver_id in results else None,
-            results[driver.driver_id].grid if driver.driver_id in results else None,
-            driver.driver_id in results and results[driver.driver_id].classified,
-            driver.positions,
-            tuple(
-                Milliseconds(crossing - leaders[lap - 1])
-                for lap, crossing in enumerate(driver.crossings, start=1)
-            ),
-            tuple(
-                bisect_right(leaders, crossing) - lap
-                for lap, crossing in enumerate(driver.crossings, start=1)
-            ),
-            tuple(sorted(lap for lap in pits.get(driver.driver_id, ()) if lap <= driver.laps)),
-        )
+        driver_trace(driver, results.get(driver.driver_id), leaders, pits.get(driver.driver_id, ()))
         for driver in timeline.drivers
+    )
+
+
+def driver_trace(
+    driver: DriverTimeline,
+    result: ResultRow | None,
+    leaders: tuple[Milliseconds, ...],
+    pit_laps: Iterable[LapNumber],
+) -> DriverTrace:
+    return DriverTrace(
+        driver.driver_id,
+        result.code if result else None,
+        result.constructor_id if result else None,
+        result.grid if result else None,
+        result is not None and result.classified,
+        driver.positions,
+        tuple(
+            Milliseconds(crossing - leaders[lap - 1])
+            for lap, crossing in enumerate(driver.crossings, start=1)
+        ),
+        tuple(
+            bisect_right(leaders, crossing) - lap
+            for lap, crossing in enumerate(driver.crossings, start=1)
+        ),
+        tuple(sorted(lap for lap in pit_laps if lap <= driver.laps)),
     )

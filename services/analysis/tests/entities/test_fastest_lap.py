@@ -1,4 +1,10 @@
-from analysis.entities.fastest_lap import FastestLap, fastest_by_lap, fastest_lap
+from analysis.entities.fastest_lap import (
+    FastestLap,
+    FastestLapEvent,
+    fastest_by_lap,
+    fastest_lap,
+    fastest_lap_events,
+)
 from analysis.entities.rows import LapRow
 from analysis.entities.timeline import RaceTimeline
 from analysis.entities.units import LapNumber, Milliseconds, Position
@@ -41,4 +47,12 @@ def test_fastest_lap_so_far_after_each_lap() -> None:
     assert fastest_by_lap(TIMELINE) == (
         FastestLap("norris", lap=LapNumber(1), time_ms=Milliseconds(117099)),
         FastestLap("piastri", lap=LapNumber(2), time_ms=Milliseconds(90000)),
+    )
+
+
+def test_fastest_lap_events_are_the_moments_the_record_improves() -> None:
+    assert fastest_lap_events(TIMELINE) == (
+        FastestLapEvent(Milliseconds(117099), "norris", LapNumber(1), Milliseconds(117099)),
+        FastestLapEvent(Milliseconds(207652), "norris", LapNumber(2), Milliseconds(90553)),
+        FastestLapEvent(Milliseconds(208000), "piastri", LapNumber(2), Milliseconds(90000)),
     )
