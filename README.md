@@ -33,8 +33,10 @@ scripts/build-push.sh <dockerhub-user> 0.1.0   # multi-arch images for Kubernete
 source scripts/kube-env.sh          # writes ~/.kube/paddock with the docker-desktop context only
 kubectl apply -f k8s/00-namespace.yaml
 kubectl create secret generic paddock-secret --from-literal=POSTGRES_PASSWORD=<password>
-kubectl apply -f k8s/
+kubectl apply -f k8s/                # postgres, then catalogue (migrates first), analysis, web
 kubectl get pods -w
+open http://localhost                # web is the only Service of type LoadBalancer
+kubectl logs deployment/catalogue -c migrate
 ```
 
 The secret is never stored in the repository. Deleting the manifests keeps the Postgres volume:
