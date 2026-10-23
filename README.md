@@ -37,7 +37,12 @@ kubectl apply -f k8s/                # postgres, then catalogue (migrates first)
 kubectl get pods -w
 open http://localhost                # web is the only Service of type LoadBalancer
 kubectl logs deployment/catalogue -c migrate
+scripts/metrics-server.sh               # once per cluster: metrics API for kubectl top and the HPAs
+kubectl get hpa -w                      # analysis and web scale on CPU, catalogue stays single
+scripts/load.sh                         # oha, 10 users for 60 s against a replay fragment
 ```
+
+`oha` comes from https://github.com/hatoo/oha/releases (one binary).
 
 The secret is never stored in the repository. Deleting the manifests keeps the Postgres volume:
 
