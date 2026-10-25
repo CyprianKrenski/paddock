@@ -14,9 +14,8 @@ from catalogue.features.read_races import (
     RaceNotIngested,
     SeasonNotLoaded,
     StandingsNotLoaded,
+    ingested_race,
     list_races,
-    race_laps,
-    race_pit_stops,
     season_standings,
 )
 
@@ -56,20 +55,18 @@ class MemoryReader:
         return ()
 
 
-def test_laps_of_an_ingested_race() -> None:
-    assert race_laps(MemoryReader(), Season(2025), RoundNumber(1)) == (
-        LapRow("norris", LapNumber(1), Position(1), Milliseconds(117099)),
-    )
+def test_an_ingested_race_is_readable() -> None:
+    assert ingested_race(MemoryReader(), Season(2025), RoundNumber(1)) == LOADED
 
 
 def test_scheduled_but_not_ingested_race_is_not_readable() -> None:
     with pytest.raises(RaceNotIngested, match="round 3"):
-        race_laps(MemoryReader(), Season(2025), RoundNumber(3))
+        ingested_race(MemoryReader(), Season(2025), RoundNumber(3))
 
 
 def test_unknown_race_is_not_readable() -> None:
     with pytest.raises(RaceNotIngested, match="round 99"):
-        race_pit_stops(MemoryReader(), Season(2025), RoundNumber(99))
+        ingested_race(MemoryReader(), Season(2025), RoundNumber(99))
 
 
 def test_season_without_races_is_not_found() -> None:

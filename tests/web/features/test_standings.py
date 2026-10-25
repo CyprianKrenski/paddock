@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 from web.entities.standings import StandingRow, Standings, race_time_text, standings_at
+from web.entities.teams import team_color
 from web.entities.units import LapNumber, Milliseconds, Position
 from web.entities.views import DriverTrace
 
@@ -112,3 +113,9 @@ def test_a_disqualified_driver_is_listed_before_retirements_without_points() -> 
         ("NOR", "LAP 1"),
         ("PIA", "+0.901"),
     ]
+
+
+def test_unknown_teams_get_a_stable_fallback_colour() -> None:
+    assert team_color("ferrari") == "#e8002d"
+    assert team_color("hesketh") == team_color("hesketh")
+    assert team_color("hesketh") != team_color(None)

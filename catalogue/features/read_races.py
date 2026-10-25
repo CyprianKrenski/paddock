@@ -54,25 +54,6 @@ def ingested_race(reader: RaceReader, season: Season, round_number: RoundNumber)
     return race
 
 
-def race_results(
-    reader: RaceReader, season: Season, round_number: RoundNumber
-) -> tuple[ResultRow, ...]:
-    ingested_race(reader, season, round_number)
-    return reader.results_of(season, round_number)
-
-
-def race_laps(reader: RaceReader, season: Season, round_number: RoundNumber) -> tuple[LapRow, ...]:
-    ingested_race(reader, season, round_number)
-    return reader.laps_of(season, round_number)
-
-
-def race_pit_stops(
-    reader: RaceReader, season: Season, round_number: RoundNumber
-) -> tuple[PitStopRow, ...]:
-    ingested_race(reader, season, round_number)
-    return reader.pit_stops_of(season, round_number)
-
-
 def season_standings(
     reader: RaceReader, season: Season, round_number: RoundNumber
 ) -> tuple[StandingRow, ...]:

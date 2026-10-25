@@ -30,18 +30,6 @@ def test_season_page_shows_load_button_only_for_pending_rounds() -> None:
     assert 'action="/races/2025/1/load"' not in html
 
 
-def test_race_page_renders_the_svg_trace_and_fastest_lap() -> None:
-    html = client_with(MemoryCatalogue()).get("/races/2025/1").text
-
-    assert "<svg" in html
-    assert 'stroke-dasharray="6 4" points="480.0,32.0 660.0,399.6 840.0,174.0"' in html
-    assert "<title>[PIA] - P2\nLap 1\n+0.901</title>" in html
-    assert "<title>[PIA] pit stop\nLap 2</title>" in html
-    assert html.count('fill="#ff8000">PIA</text>') == 3
-    assert '<text class="code" x="665.0" y="394.6" fill="#ff8000">PIA</text>' in html
-    assert "fastest lap <b>piastri</b>" in html
-
-
 def test_load_race_posts_to_catalogue_then_redirects_to_the_season() -> None:
     catalogue = MemoryCatalogue()
 
@@ -71,14 +59,6 @@ def test_home_form_posts_to_a_fixed_action_without_javascript() -> None:
     assert "onsubmit" not in html
 
 
-def test_replay_json_api_serves_the_same_payload_as_the_page() -> None:
-    response = client_with(MemoryCatalogue()).get("/api/races/2025/1/replay")
-
-    assert response.status_code == 200
-    assert response.json()["drivers"][0]["code"] == "NOR"
-    assert response.json()["fastest_laps"] == [[117099, "norris"], [208000, "piastri"]]
-
-
 class DeadCatalogue(MemoryCatalogue):
     def seasons(self) -> tuple[Season, ...]:
         raise UpstreamDown("http://catalogue:8000 unreachable: refused")
@@ -89,23 +69,6 @@ def test_upstream_down_renders_a_503_page() -> None:
 
     assert response.status_code == 503
     assert "unreachable" in response.text
-
-
-def test_race_page_has_a_classification_table_for_the_last_lap() -> None:
-    html = client_with(MemoryCatalogue()).get("/races/2025/1").text
-
-    assert '<tbody id="standings" data-lap="2">' in html
-    assert 'data-px-per-lap="180"' in html
-    assert 'data-standings-url="/races/2025/1/standings"' in html
-    assert "<td>3:27.652</td>" in html
-    assert "<td>+0.348</td>" in html
-    assert 'id="lap-band"' in html
-    assert '<g clip-path="url(#drawn)">' in html
-    teammate = "linear-gradient(90deg, #ff8000 0 33%, #000 33% 67%, #ff8000 67%)"
-    assert f'<span class="swatch" style="background: {teammate}"></span> <b>PIA</b>' in html
-    assert '<span class="swatch" style="background: #ff8000"></span> <b>NOR</b>' in html
-    assert '<span class="pit">In Pit</span>' in html
-    assert ">Finish</text>" in html
 
 
 def test_standings_fragment_renders_rows_for_the_requested_lap() -> None:
@@ -142,18 +105,22 @@ def test_replay_page_embeds_keyframes_and_the_script() -> None:
     assert "1x" not in html.split("<select")[1].split("</select>")[0]
 
 
-def test_race_trace_is_marked_as_the_fallback_view() -> None:
-    html = client_with(MemoryCatalogue()).get("/races/2025/1").text
-
-    assert '<a href="/races/2025/1/replay">replay</a>' in html
-    assert "fallback" in html
-
-
-def test_season_page_links_to_the_replay() -> None:
+def test_season_page_links_to_the_replay_only() -> None:
     html = client_with(MemoryCatalogue()).get("/seasons/2025").text
 
     assert '<a href="/races/2025/1/replay">Australian Grand Prix</a>' in html
-    assert '<a href="/races/2025/1" class="muted">trace</a>' in html
+    assert 'href="/races/2025/1"' not in html
+
+
+def test_pages_carry_breadcrumbs_back_to_the_seasons() -> None:
+    client = client_with(MemoryCatalogue())
+
+    season = client.get("/seasons/2025").text
+    replay = client.get("/races/2025/1/replay").text
+
+    assert '<a href="/" class="crumb">Seasons</a>' in season
+    assert '<a href="/seasons/2025" class="crumb">Season 2025</a>' in replay
+    assert "race trace</a>" not in replay
 
 
 def test_championship_fragment_projects_points_for_the_lap() -> None:

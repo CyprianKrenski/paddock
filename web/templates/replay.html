@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Paddock: {{ page.race.name }} {{ page.race.season }} replay{% endblock %}
+{% block crumbs %} <a href="/" class="crumb">Seasons</a> <a href="/seasons/{{ page.race.season }}" class="crumb">Season {{ page.race.season }}</a> <span class="crumb">{{ page.race.name }}</span>{% endblock %}
 {% block content %}
 <h1>{{ page.race.name }} {{ page.race.season }}</h1>
-<p class="meta">{{ page.race.circuit_name }} &middot; {{ page.race.date }} &middot; {{ page.payload.total_laps }} laps &middot; <a href="/races/{{ page.race.season }}/{{ page.race.round_number }}">race trace</a></p>
+<p class="meta">{{ page.race.circuit_name }} &middot; {{ page.race.date }} &middot; {{ page.payload.total_laps }} laps</p>
 <div class="replay-wrap">
 <div class="replay-main">
 <h2>Replay</h2>
@@ -50,8 +51,7 @@
   </select>
   <span class="clock" id="clock">0:00</span>
 </div>
-<noscript><p class="hint">The replay needs JavaScript; the race trace works without it.</p></noscript>
-<p><a href="/seasons/{{ page.race.season }}">&larr; Season {{ page.race.season }}</a></p>
+<noscript><p class="hint">The replay needs JavaScript.</p></noscript>
 </div>
 <div class="replay-side">
 <h2>Classification</h2>

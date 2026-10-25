@@ -48,10 +48,6 @@ class Trace:
     fastest_by_lap: tuple[FastestLap, ...]
     series: tuple[DriverTrace, ...]
 
-    @property
-    def fastest_lap(self) -> FastestLap | None:
-        return self.fastest_by_lap[-1] if self.fastest_by_lap else None
-
 
 @dataclass(frozen=True, slots=True)
 class Keyframe:

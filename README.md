@@ -35,9 +35,9 @@ only its own extra from `pyproject.toml`.
 
 ```bash
 docker compose up --build -d        # postgres, one-shot migrate, catalogue :8000, web :8080
-open http://localhost:8080          # load a season, load a race, open its replay (race trace kept as a fallback view)
+open http://localhost:8080          # load a season, load a race, open its replay
 docker compose logs -f web
-scripts/build-push.sh cypriankrenski93 0.3.0   # multi-arch images for Kubernetes (needs docker login)
+scripts/build-push.sh cypriankrenski93 0.3.0   # multi-arch images for Kubernetes
 ```
 
 ## Kubernetes (Docker Desktop)
@@ -84,3 +84,6 @@ kubectl scale deployment web --replicas=3
 
 `oha` is a single binary from https://github.com/hatoo/oha/releases (pick `oha-linux-amd64` or
 `oha-linux-arm64` for your CPU).
+
+The replay script in `web/templates/replay.html` has no browser test; `node tests/web/harness/replay_harness.js`
+runs it against a recorded payload with a DOM stub and prints positions at chosen moments.
