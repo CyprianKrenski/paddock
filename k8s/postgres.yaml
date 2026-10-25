@@ -26,6 +26,7 @@ spec:
       labels:
         app: postgres
     spec:
+      automountServiceAccountToken: false
       containers:
         - name: postgres
           image: postgres:17-alpine
@@ -50,8 +51,8 @@ spec:
             periodSeconds: 15
           resources:
             requests:
-              cpu: 250m
-              memory: 256Mi
+              cpu: 500m
+              memory: 512Mi
             limits:
               cpu: 500m
               memory: 512Mi

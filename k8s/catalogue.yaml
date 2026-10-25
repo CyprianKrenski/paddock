@@ -24,18 +24,26 @@ spec:
       labels:
         app: catalogue
     spec:
+      automountServiceAccountToken: false
       initContainers:
         - name: migrate
-          image: cypriankrenski93/paddock-catalogue:0.2.0
-          command: ["alembic", "-c", "services/catalogue/alembic.ini", "upgrade", "head"]
+          image: cypriankrenski93/paddock-catalogue:0.3.0
+          command: ["alembic", "upgrade", "head"]
           envFrom:
             - configMapRef:
                 name: paddock-config
             - secretRef:
                 name: paddock-secret
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
       containers:
         - name: catalogue
-          image: cypriankrenski93/paddock-catalogue:0.2.0
+          image: cypriankrenski93/paddock-catalogue:0.3.0
           ports:
             - containerPort: 8000
           envFrom:
@@ -47,13 +55,16 @@ spec:
             httpGet:
               path: /health/ready
               port: 8000
+            initialDelaySeconds: 3
             periodSeconds: 5
+            timeoutSeconds: 3
           livenessProbe:
             httpGet:
               path: /health/live
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 15
+            timeoutSeconds: 3
           resources:
             requests:
               cpu: "1"

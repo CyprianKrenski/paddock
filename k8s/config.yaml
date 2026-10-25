@@ -9,4 +9,3 @@ data:
   POSTGRES_DB: paddock
   POSTGRES_USER: paddock
   CATALOGUE_URL: http://catalogue:8000
-  ANALYSIS_URL: http://analysis:8000
