@@ -3,6 +3,11 @@ import httpx2
 from web.entities.errors import NotFound, UpstreamDown
 
 
+def upstream_client(base_url: str, timeout: float) -> httpx2.Client:
+    limits = httpx2.Limits(max_keepalive_connections=0)
+    return httpx2.Client(base_url=base_url, timeout=timeout, limits=limits)
+
+
 def call(http: httpx2.Client, method: str, path: str) -> object:
     try:
         response = http.request(method, path)
