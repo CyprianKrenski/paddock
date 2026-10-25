@@ -8,6 +8,8 @@
     body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 2rem 2.5rem; background: var(--bg); color: var(--text); }
     a { color: var(--text); }
     nav a { text-decoration: none; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+    nav .crumb { color: var(--muted); font-weight: 600; font-size: 0.85rem; margin-left: 0.6rem; }
+    nav a.crumb:hover { color: var(--text); }
     h1 { font-size: 2.4rem; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; margin: 1.2rem 0 0.2rem; }
     h2 { font-size: 0.95rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin: 1.6rem 0 0.4rem; }
     p.meta { color: var(--muted); margin: 0 0 0.4rem; }
@@ -15,10 +17,9 @@
     table { border-collapse: collapse; margin-top: 1rem; }
     td, th { padding: 0.45rem 1rem; border-bottom: 1px solid var(--grid); text-align: left; }
     th { color: var(--muted); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.75rem; }
-    .loaded { color: #52e252; font-weight: 600; } .pending { color: var(--muted); }
+    .loaded { color: #52e252; font-weight: 600; }
     button { padding: 0.3rem 0.9rem; background: var(--accent); color: #fff; border: 0; border-radius: 3px; font-weight: 700; cursor: pointer; }
     input { background: var(--panel); color: var(--text); border: 1px solid var(--grid); padding: 0.3rem; }
-    .panorama { overflow-x: auto; background: var(--panel); border-radius: 6px; }
     svg text { font-size: 11px; fill: var(--muted); font-family: inherit; }
     svg text.code { font-size: 10px; font-weight: 700; }
     .grid { stroke: var(--grid); stroke-width: 1; }
@@ -28,7 +29,6 @@
     .swatch { display: inline-block; width: 1em; height: 1em; vertical-align: -0.15em; border-radius: 2px; }
     .pit { color: #15151e; background: #f2f2f2; font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 2px; margin-right: 0.4rem; }
     .fastest { color: #c77dff; }
-    a.muted { color: var(--muted); font-size: 0.8rem; margin-left: 0.5rem; }
     .gain { color: #52e252; font-weight: 700; } .loss { color: #ff5a5a; font-weight: 700; } .same { color: var(--muted); } .gained { color: var(--muted); font-size: 0.8rem; }
     .replay-wrap { display: flex; align-items: flex-start; gap: 1.5rem; }
     .replay-main { flex: 1 1 0; min-width: 0; }
@@ -56,7 +56,7 @@
   </style>
 </head>
 <body>
-  <nav><a href="/">Paddock</a></nav>
+  <nav><a href="/">Paddock</a>{% block crumbs %}{% endblock %}</nav>
   {% block content %}{% endblock %}
   <footer>Data: Jolpica F1 API. Visualisation: paddock.</footer>
 </body>
