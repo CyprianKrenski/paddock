@@ -20,7 +20,7 @@ services:
     build:
       context: .
       args: { SERVICE: catalogue }
-    command: ["alembic", "-c", "services/catalogue/alembic.ini", "upgrade", "head"]
+    command: ["alembic", "upgrade", "head"]
     environment: &catalogue_env
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -40,18 +40,6 @@ services:
       migrate:
         condition: service_completed_successfully
 
-  analysis:
-    image: paddock-analysis:dev
-    build:
-      context: .
-      args: { SERVICE: analysis }
-    environment:
-      CATALOGUE_URL: http://catalogue:8000
-    ports:
-      - "8001:8000"
-    depends_on:
-      - catalogue
-
   web:
     image: paddock-web:dev
     build:
@@ -59,12 +47,10 @@ services:
       args: { SERVICE: web }
     environment:
       CATALOGUE_URL: http://catalogue:8000
-      ANALYSIS_URL: http://analysis:8000
     ports:
       - "8080:8000"
     depends_on:
       - catalogue
-      - analysis
 
 volumes:
   postgres-data:

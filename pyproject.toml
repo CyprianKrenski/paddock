@@ -1,29 +1,38 @@
 [project]
 name = "paddock"
-version = "0.1.0"
+version = "0.3.0"
 requires-python = ">=3.13"
-dependencies = ["catalogue", "analysis", "web"]
+dependencies = [
+    "fastapi>=0.143.0",
+    "httpx2>=2.13.1",
+    "pydantic>=2.14.0",
+    "pydantic-settings>=2.6",
+    "uvicorn>=0.54.0",
+]
 
-[tool.uv]
-package = false
-
-[tool.uv.workspace]
-members = ["services/*"]
-
-[tool.uv.sources]
-catalogue = { workspace = true }
-analysis = { workspace = true }
-web = { workspace = true }
+[project.optional-dependencies]
+catalogue = ["alembic>=1.14", "psycopg[binary]>=3.2", "sqlalchemy>=2.0"]
+web = ["jinja2>=3.1", "python-multipart>=0.0.20"]
 
 [dependency-groups]
 dev = [
     "factory-boy>=3.3.3",
-    "httpx2>=2.13.1",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
     "ruff>=0.17.0",
     "types-factory-boy>=0.4.1",
 ]
+
+[build-system]
+requires = ["uv_build>=0.11.32,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = ["catalogue", "web"]
+
+[tool.uv]
+default-groups = ["dev"]
 
 [tool.ruff]
 cache-dir = ".cache/ruff"
@@ -34,32 +43,19 @@ target-version = "py313"
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["catalogue", "analysis", "web"]
-known-local-folder = ["catalogue_tests", "analysis_tests", "web_tests"]
+known-first-party = ["catalogue", "web"]
+known-local-folder = ["tests"]
 
 [tool.mypy]
 cache_dir = ".cache/mypy"
 strict = true
 plugins = ["pydantic.mypy"]
-files = ["services"]
+files = ["catalogue", "web", "tests"]
 explicit_package_bases = true
-mypy_path = [
-    "services/catalogue/src",
-    "services/catalogue/tests/support",
-    "services/analysis/src",
-    "services/analysis/tests/support",
-    "services/web/src",
-    "services/web/tests/support",
-]
-exclude = ["alembic/"]
+exclude = ["catalogue/alembic/"]
 
 [tool.pytest.ini_options]
 cache_dir = ".cache/pytest"
-testpaths = ["services"]
-pythonpath = [
-    "services/catalogue/tests/support",
-    "services/analysis/tests/support",
-    "services/web/tests/support",
-]
+testpaths = ["tests"]
 addopts = "--import-mode=importlib"
 markers = ["integration: needs POSTGRES_* env (uv run --env-file .env) and a running postgres"]
