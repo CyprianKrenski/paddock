@@ -1,8 +1,12 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from web.entities.errors import NotFound, UpstreamDown
+
+log = logging.getLogger(__name__)
 
 
 def render_error(request: Request, status_code: int, message: str) -> HTMLResponse:
@@ -16,7 +20,10 @@ def not_found(request: Request, error: Exception) -> HTMLResponse:
 
 
 def upstream_down(request: Request, error: Exception) -> HTMLResponse:
-    return render_error(request, 503, str(error))
+    log.warning("upstream failed: %s", error)
+    return render_error(
+        request, 503, "The race data service is unavailable. Try again in a moment."
+    )
 
 
 def register_error_handlers(app: FastAPI) -> None:

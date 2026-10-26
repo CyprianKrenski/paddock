@@ -15,9 +15,10 @@ TEMPLATES = Path(__file__).parent / "templates"
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
-    app = FastAPI(title="web")
+    app = FastAPI(title="web", docs_url=None, redoc_url=None, openapi_url=None)
     app.state.catalogue = HttpCatalogue(
-        upstream_client(settings.catalogue_url, settings.upstream_timeout_seconds)
+        upstream_client(settings.catalogue_url, settings.upstream_timeout_seconds),
+        ingest_timeout=settings.ingest_timeout_seconds,
     )
     app.state.templates = Jinja2Templates(directory=TEMPLATES)
     register_error_handlers(app)

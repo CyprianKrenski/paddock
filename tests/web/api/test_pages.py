@@ -1,3 +1,6 @@
+import logging
+
+import pytest
 from fastapi.testclient import TestClient
 
 from web.api.dependencies import get_catalogue
@@ -64,11 +67,32 @@ class DeadCatalogue(MemoryCatalogue):
         raise UpstreamDown("http://catalogue:8000 unreachable: refused")
 
 
-def test_upstream_down_renders_a_503_page() -> None:
-    response = client_with(DeadCatalogue()).get("/")
+def test_upstream_down_renders_a_503_page_without_the_upstream_address(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.WARNING):
+        response = client_with(DeadCatalogue()).get("/")
 
     assert response.status_code == 503
-    assert "unreachable" in response.text
+    assert "unavailable" in response.text
+    assert "catalogue:8000" not in response.text
+    assert "http://catalogue:8000 unreachable: refused" in caplog.text
+
+
+def test_api_docs_are_not_served_by_web() -> None:
+    client = client_with(MemoryCatalogue())
+
+    assert client.get("/docs").status_code == 404
+    assert client.get("/openapi.json").status_code == 404
+
+
+def test_out_of_range_path_parameters_are_rejected_before_any_upstream_call() -> None:
+    client = client_with(DeadCatalogue())
+
+    assert client.get("/races/1800/1/replay").status_code == 422
+    assert client.get("/races/2025/0/replay").status_code == 422
+    assert client.get("/races/2025/1/standings/999").status_code == 422
+    assert client.post("/seasons/load", data={"season": "1800"}).status_code == 422
 
 
 def test_standings_fragment_renders_rows_for_the_requested_lap() -> None:
