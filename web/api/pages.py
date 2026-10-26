@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from web.api.dependencies import CatalogueDep, Templates
-from web.entities.units import LapNumber, RoundNumber, Season
+from web.api.dependencies import CatalogueDep, LapPath, RoundPath, SeasonPath, Templates
+from web.entities.units import Season
 from web.features.pages import (
     home_page,
     race_championship,
@@ -23,7 +23,7 @@ def home(request: Request, catalogue: CatalogueDep, templates: Templates) -> HTM
 
 @router.get("/seasons/{season}", response_class=HTMLResponse)
 def show_season(
-    request: Request, season: Season, catalogue: CatalogueDep, templates: Templates
+    request: Request, season: SeasonPath, catalogue: CatalogueDep, templates: Templates
 ) -> HTMLResponse:
     return templates.TemplateResponse(
         request, "season.html", {"page": season_page(catalogue, season)}
@@ -33,8 +33,8 @@ def show_season(
 @router.get("/races/{season}/{round_number}/replay", response_class=HTMLResponse)
 def show_replay(
     request: Request,
-    season: Season,
-    round_number: RoundNumber,
+    season: SeasonPath,
+    round_number: RoundPath,
     catalogue: CatalogueDep,
     templates: Templates,
 ) -> HTMLResponse:
@@ -45,9 +45,9 @@ def show_replay(
 @router.get("/races/{season}/{round_number}/standings/{lap}", response_class=HTMLResponse)
 def show_standings(
     request: Request,
-    season: Season,
-    round_number: RoundNumber,
-    lap: LapNumber,
+    season: SeasonPath,
+    round_number: RoundPath,
+    lap: LapPath,
     catalogue: CatalogueDep,
     templates: Templates,
 ) -> HTMLResponse:
@@ -58,9 +58,9 @@ def show_standings(
 @router.get("/races/{season}/{round_number}/championship/{lap}", response_class=HTMLResponse)
 def show_championship(
     request: Request,
-    season: Season,
-    round_number: RoundNumber,
-    lap: LapNumber,
+    season: SeasonPath,
+    round_number: RoundPath,
+    lap: LapPath,
     catalogue: CatalogueDep,
     templates: Templates,
 ) -> HTMLResponse:
@@ -69,14 +69,16 @@ def show_championship(
 
 
 @router.post("/seasons/load")
-def load_season(season: Annotated[Season, Form()], catalogue: CatalogueDep) -> RedirectResponse:
+def load_season(
+    season: Annotated[Season, Form(ge=1950, le=2100)], catalogue: CatalogueDep
+) -> RedirectResponse:
     catalogue.load_season(season)
     return RedirectResponse(f"/seasons/{season}", status_code=303)
 
 
 @router.post("/races/{season}/{round_number}/load")
 def load_race(
-    season: Season, round_number: RoundNumber, catalogue: CatalogueDep
+    season: SeasonPath, round_number: RoundPath, catalogue: CatalogueDep
 ) -> RedirectResponse:
     catalogue.load_race(season, round_number)
     return RedirectResponse(f"/seasons/{season}", status_code=303)

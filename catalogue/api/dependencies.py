@@ -1,9 +1,10 @@
 from collections.abc import Iterator
 from typing import Annotated
 
-from fastapi import Depends, Request
+from fastapi import Depends, Path, Request
 from sqlalchemy.orm import Session
 
+from catalogue.entities.units import RoundNumber, Season
 from catalogue.features.ingest_race import RaceStore
 from catalogue.features.ingest_season import ScheduleStore
 from catalogue.features.read_races import RaceReader
@@ -35,3 +36,6 @@ Fetch = Annotated[FetchJson, Depends(get_fetch)]
 RaceStoreDep = Annotated[RaceStore, Depends(get_race_store)]
 ScheduleStoreDep = Annotated[ScheduleStore, Depends(get_race_store)]
 RaceReaderDep = Annotated[RaceReader, Depends(get_race_reader)]
+SeasonPath = Annotated[Season, Path(ge=1950, le=2100)]
+RoundPath = Annotated[RoundNumber, Path(ge=1, le=30)]
+StandingsRoundPath = Annotated[RoundNumber, Path(ge=0, le=30)]

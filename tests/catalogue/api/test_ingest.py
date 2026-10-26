@@ -36,13 +36,21 @@ def test_ingest_returns_counts() -> None:
     assert len(store.saved) == 1
 
 
-def test_unknown_round_is_404() -> None:
-    fetch = ScriptedFetch({"/2025/99/results.json": EnvelopeFactory.build(MRData__total="0")})
+def test_out_of_range_season_or_round_never_reaches_the_source() -> None:
+    client = client_with(ScriptedFetch({}), RecordingStore())
 
-    response = client_with(fetch, RecordingStore()).post("/races/2025/99/ingest")
+    assert client.post("/races/1800/1/ingest").status_code == 422
+    assert client.post("/races/2025/0/ingest").status_code == 422
+    assert client.get("/seasons/2025/standings/0").status_code == 200
+
+
+def test_unknown_round_is_404() -> None:
+    fetch = ScriptedFetch({"/2025/30/results.json": EnvelopeFactory.build(MRData__total="0")})
+
+    response = client_with(fetch, RecordingStore()).post("/races/2025/30/ingest")
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "season 2025 round 99 is unknown to the source"}
+    assert response.json() == {"detail": "season 2025 round 30 is unknown to the source"}
 
 
 def test_source_failure_is_502() -> None:
