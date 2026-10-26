@@ -121,3 +121,17 @@ def test_standings_before_a_round_are_parsed() -> None:
     assert HttpCatalogue(http(handler)).standings_of(Season(2025), RoundNumber(2)) == (
         StandingBefore("norris", Position(1), 44.0, 1),
     )
+
+
+def test_ingest_calls_wait_longer_than_reads() -> None:
+    read_timeouts: list[float] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        read_timeouts.append(request.extensions["timeout"]["read"])
+        return httpx2.Response(200, json={"seasons": []})
+
+    catalogue = HttpCatalogue(http(handler), ingest_timeout=180.0)
+    catalogue.load_season(Season(2025))
+    catalogue.seasons()
+
+    assert read_timeouts == [180.0, 5.0]

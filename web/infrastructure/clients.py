@@ -13,8 +13,9 @@ REPLAY = TypeAdapter(Replay)
 
 
 class HttpCatalogue:
-    def __init__(self, http: httpx2.Client) -> None:
+    def __init__(self, http: httpx2.Client, ingest_timeout: float = 180.0) -> None:
         self._http = http
+        self._ingest_timeout = ingest_timeout
 
     def seasons(self) -> tuple[Season, ...]:
         return tuple(SEASONS.validate_python(call(self._http, "GET", "/seasons"))["seasons"])
@@ -23,10 +24,10 @@ class HttpCatalogue:
         return tuple(RACES.validate_python(call(self._http, "GET", f"/seasons/{season}/races")))
 
     def load_season(self, season: Season) -> None:
-        call(self._http, "POST", f"/seasons/{season}/ingest")
+        call(self._http, "POST", f"/seasons/{season}/ingest", self._ingest_timeout)
 
     def load_race(self, season: Season, round_number: RoundNumber) -> None:
-        call(self._http, "POST", f"/races/{season}/{round_number}/ingest")
+        call(self._http, "POST", f"/races/{season}/{round_number}/ingest", self._ingest_timeout)
 
     def standings_of(self, season: Season, round_number: RoundNumber) -> tuple[StandingBefore, ...]:
         payload = call(self._http, "GET", f"/seasons/{season}/standings/{round_number}")
