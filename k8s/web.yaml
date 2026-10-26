@@ -28,7 +28,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: web
-          image: cypriankrenski93/paddock-web:0.3.0
+          image: cypriankrenski93/paddock-web:0.3.1
           ports:
             - containerPort: 8000
           envFrom:

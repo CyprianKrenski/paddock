@@ -78,7 +78,7 @@ Scaling: load a season and a race in the browser first, then
 
 ```bash
 scripts/load.sh                                 # oha, 10 users for 60 s against a replay fragment
-kubectl get hpa -w                              # web scales on CPU; catalogue stays single (ingest)
+kubectl get hpa -w                              # web 1-4 and catalogue 1-3 scale on CPU
 kubectl scale deployment web --replicas=3
 ```
 
