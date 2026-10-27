@@ -49,7 +49,8 @@ namespace; without it, add `-n paddock` to every `kubectl` call.
 ```bash
 source scripts/kube-env.sh
 kubectl apply -f k8s/00-namespace.yaml
-kubectl create secret generic paddock-secret --from-literal=POSTGRES_PASSWORD=<password>
+kubectl create secret generic paddock-secret \
+  --from-literal=POSTGRES_PASSWORD="$(sed -n 's/^POSTGRES_PASSWORD=//p' .env)"   # read from .env, never typed into the shell history
 scripts/metrics-server.sh                       # once per cluster; needed by kubectl top and the HPA
 kubectl apply -f k8s/
 kubectl rollout status deployment/catalogue     # waits for the Alembic initContainer and readiness
