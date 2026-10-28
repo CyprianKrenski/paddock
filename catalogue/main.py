@@ -1,3 +1,5 @@
+import logging
+
 import httpx2
 from fastapi import FastAPI
 
@@ -30,4 +32,5 @@ def create_app(settings: Settings) -> FastAPI:
 
 
 def from_env() -> FastAPI:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
     return create_app(Settings())

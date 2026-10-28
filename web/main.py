@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -28,4 +29,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
 
 def from_env() -> FastAPI:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:     %(message)s")
     return create_app(Settings())
