@@ -1,7 +1,6 @@
 import pytest
 
-from catalogue.entities.errors import MalformedSourceRawData
-from catalogue.entities.lap_time import parse_lap_time
+from catalogue.entities.lap_time import MalformedSourceRawData, parse_lap_time
 
 
 def test_parses_seconds_minutes_and_hours() -> None:

@@ -93,3 +93,11 @@ class StandingBefore:
     position: Position
     points: float
     wins: int
+
+
+class UpstreamDown(Exception):
+    pass
+
+
+class NotFound(Exception):
+    pass

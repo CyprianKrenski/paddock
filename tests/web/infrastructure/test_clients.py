@@ -4,9 +4,16 @@ from datetime import date
 import httpx2
 import pytest
 
-from web.entities.errors import NotFound, UpstreamDown
 from web.entities.units import Distance, LapNumber, Milliseconds, Position, RoundNumber, Season
-from web.entities.views import DriverReplay, Keyframe, RaceSummary, Replay, StandingBefore
+from web.entities.views import (
+    DriverReplay,
+    Keyframe,
+    NotFound,
+    RaceSummary,
+    Replay,
+    StandingBefore,
+    UpstreamDown,
+)
 from web.infrastructure.clients import HttpCatalogue
 
 Handler = Callable[[httpx2.Request], httpx2.Response]

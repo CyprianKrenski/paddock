@@ -1,6 +1,6 @@
 import httpx2
 
-from web.entities.errors import NotFound, UpstreamDown
+from web.entities.views import NotFound, UpstreamDown
 
 
 def upstream_client(base_url: str, timeout: float) -> httpx2.Client:

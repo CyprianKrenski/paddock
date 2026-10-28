@@ -1,10 +1,9 @@
 from datetime import date, datetime
+from typing import Any
 
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-
-from catalogue.entities.json_object import JsonObject
 
 
 class Base(DeclarativeBase):
@@ -82,4 +81,4 @@ class RawResponse(Base):
 
     url: Mapped[str] = mapped_column(primary_key=True)
     fetched_at: Mapped[datetime]
-    body: Mapped[JsonObject] = mapped_column(JSONB)
+    body: Mapped[dict[str, Any]] = mapped_column(JSONB)

@@ -4,8 +4,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from web.api.dependencies import get_catalogue
-from web.entities.errors import UpstreamDown
 from web.entities.units import RoundNumber, Season
+from web.entities.views import UpstreamDown
 from web.features.sources import Catalogue
 from web.main import create_app
 

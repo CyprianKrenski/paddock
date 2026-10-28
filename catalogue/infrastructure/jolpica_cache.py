@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from typing import Protocol
 from urllib.parse import urlencode
 
-from catalogue.entities.json_object import JsonObject
+from catalogue.infrastructure.jolpica import JsonObject
 from catalogue.infrastructure.jolpica_pages import FetchJson
 
 

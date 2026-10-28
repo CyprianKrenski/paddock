@@ -4,8 +4,8 @@ from typing import Protocol
 
 from pydantic import BaseModel, Field
 
-from catalogue.entities.json_object import JsonObject
 from catalogue.entities.units import RoundNumber, Season
+from catalogue.infrastructure.jolpica import JsonObject
 
 MAX_PAGE_SIZE = 100
 

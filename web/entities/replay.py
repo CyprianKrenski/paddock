@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 from math import ceil
+from typing import Any
 
-from web.entities.json_object import JsonObject
 from web.entities.standings import laps_down_text, race_time_text
 from web.entities.teams import line_styles, team_name
 from web.entities.units import Milliseconds
 from web.entities.views import DriverReplay, Replay
+
+JsonObject = dict[str, Any]
 
 VIEWPORT = 960
 PX_PER_SECOND = 4

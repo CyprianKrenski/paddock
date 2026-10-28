@@ -4,8 +4,8 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, sessionmaker
 
-from catalogue.entities.json_object import JsonObject
 from catalogue.entities.models import RawResponse
+from catalogue.infrastructure.jolpica import JsonObject
 
 
 class SqlRawResponseStore:

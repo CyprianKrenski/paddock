@@ -1,7 +1,7 @@
 import pytest
 
-from web.entities.errors import NotFound
 from web.entities.units import RoundNumber, Season
+from web.entities.views import NotFound
 from web.features.pages import replay_page, season_page
 
 from tests.web.fakes import AUSTRALIA, CHINA, MemoryCatalogue

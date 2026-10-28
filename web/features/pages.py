@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 
 from web.entities.championship import ChampionshipRow, championship_at
-from web.entities.errors import NotFound
-from web.entities.json_object import JsonObject
-from web.entities.replay import ReplayLayout, replay_layout, replay_payload
+from web.entities.replay import JsonObject, ReplayLayout, replay_layout, replay_payload
 from web.entities.standings import Standings, standings_at
 from web.entities.units import LapNumber, RoundNumber, Season
-from web.entities.views import RaceSummary
+from web.entities.views import NotFound, RaceSummary
 from web.features.sources import Catalogue
 
 

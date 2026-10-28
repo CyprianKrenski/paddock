@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
-from catalogue.entities.errors import MalformedSourceRawData
+from catalogue.entities.lap_time import MalformedSourceRawData
 from catalogue.features.ingest_race import RaceNotFound
 from catalogue.features.ingest_season import SeasonNotFound
 from catalogue.features.read_races import RaceNotIngested, SeasonNotLoaded, StandingsNotLoaded

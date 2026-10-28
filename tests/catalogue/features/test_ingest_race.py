@@ -3,7 +3,7 @@ from typing import Any
 
 import pytest
 
-from catalogue.entities.errors import MalformedSourceRawData
+from catalogue.entities.lap_time import MalformedSourceRawData
 from catalogue.entities.race_snapshot import (
     DriverInfo,
     LapRow,

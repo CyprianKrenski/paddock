@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from web.entities.errors import NotFound, UpstreamDown
+from web.entities.views import NotFound, UpstreamDown
 
 log = logging.getLogger(__name__)
 

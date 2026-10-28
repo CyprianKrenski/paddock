@@ -3,7 +3,6 @@ from datetime import date
 
 from pydantic import SecretStr
 
-from catalogue.entities.json_object import JsonObject
 from catalogue.entities.race_snapshot import (
     LapRow,
     PitStopRow,
@@ -14,7 +13,7 @@ from catalogue.entities.race_snapshot import (
     StandingRow,
 )
 from catalogue.entities.units import LapNumber, Milliseconds, Position, RoundNumber, Season
-from catalogue.infrastructure.jolpica import RetriesExhausted
+from catalogue.infrastructure.jolpica import JsonObject, RetriesExhausted
 from catalogue.infrastructure.settings import Settings
 
 

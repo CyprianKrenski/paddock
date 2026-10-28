@@ -1,5 +1,8 @@
-from catalogue.entities.errors import MalformedSourceRawData
 from catalogue.entities.units import Milliseconds
+
+
+class MalformedSourceRawData(ValueError):
+    pass
 
 
 def parse_lap_time(text: str | None) -> Milliseconds | None:

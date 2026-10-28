@@ -4,10 +4,11 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
+from typing import Any
 
 import httpx2
 
-from catalogue.entities.json_object import JsonObject
+JsonObject = dict[str, Any]
 
 MAX_RETRY_AFTER_SECONDS = 30.0
 
