@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from catalogue.entities.models import Driver, DriverStanding, Lap, PitStop, Race, Result
-from catalogue.entities.race_snapshot import RaceInfo, RaceSnapshot, ResultRow
+from catalogue.entities.race_snapshot import RaceInfo, RaceSnapshot
 
 
 class SqlRaceStore:
@@ -17,7 +17,11 @@ class SqlRaceStore:
         self._upsert(Driver, [asdict(driver) for driver in snapshot.drivers], ["id"])
         self._upsert(
             Result,
-            [{"race_id": race_id, **result_columns(row)} for row in snapshot.results],
+            [
+                {"race_id": race_id}
+                | {column: value for column, value in asdict(row).items() if column != "code"}
+                for row in snapshot.results
+            ],
             ["race_id", "driver_id"],
         )
         self._upsert(
@@ -67,9 +71,3 @@ class SqlRaceStore:
         statement = insert(model).values(rows)
         updates = {column: statement.excluded[column] for column in rows[0] if column not in key}
         self._session.execute(statement.on_conflict_do_update(index_elements=key, set_=updates))
-
-
-def result_columns(row: ResultRow) -> dict[str, Any]:
-    columns = asdict(row)
-    del columns["code"]
-    return columns
