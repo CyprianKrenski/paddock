@@ -26,7 +26,7 @@ spec:
       automountServiceAccountToken: false
       initContainers:
         - name: migrate
-          image: cypriankrenski93/paddock-catalogue:0.3.1
+          image: cypriankrenski93/paddock-catalogue:0.3.2
           command: ["alembic", "upgrade", "head"]
           envFrom:
             - configMapRef:
@@ -42,7 +42,7 @@ spec:
               memory: 256Mi
       containers:
         - name: catalogue
-          image: cypriankrenski93/paddock-catalogue:0.3.1
+          image: cypriankrenski93/paddock-catalogue:0.3.2
           ports:
             - containerPort: 8000
           envFrom:
