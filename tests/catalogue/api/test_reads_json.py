@@ -68,21 +68,51 @@ def test_replay_as_json() -> None:
     response = client_with_reader(MemorySource()).get("/races/2025/1/replay")
 
     assert response.status_code == 200
-    body = response.json()
-    assert body["total_laps"] == 2
-    assert body["fastest_laps"][-1] == {
-        "at_ms": 208000,
-        "driver_id": "piastri",
-        "lap": 2,
-        "time_ms": 90000,
-    }
-    assert body["drivers"][2] == {
-        "driver_id": "hadjar",
-        "code": "HAD",
-        "team": "rb",
-        "grid": 11,
-        "classified": False,
-        "keyframes": [{"at_ms": 0, "distance": 0.0, "in_pit": False}],
+    assert response.json() == {
+        "season": 2025,
+        "round_number": 1,
+        "total_laps": 2,
+        "fastest_laps": [
+            {"at_ms": 117099, "driver_id": "norris", "lap": 1, "time_ms": 117099},
+            {"at_ms": 207652, "driver_id": "norris", "lap": 2, "time_ms": 90553},
+            {"at_ms": 208000, "driver_id": "piastri", "lap": 2, "time_ms": 90000},
+        ],
+        "drivers": [
+            {
+                "driver_id": "norris",
+                "code": "NOR",
+                "team": "mclaren",
+                "grid": 1,
+                "classified": True,
+                "keyframes": [
+                    {"at_ms": 0, "distance": 0.0, "in_pit": False},
+                    {"at_ms": 117099, "distance": 1.0, "in_pit": False},
+                    {"at_ms": 207652, "distance": 2.0, "in_pit": False},
+                ],
+            },
+            {
+                "driver_id": "piastri",
+                "code": "PIA",
+                "team": "mclaren",
+                "grid": 2,
+                "classified": True,
+                "keyframes": [
+                    {"at_ms": 0, "distance": 0.0, "in_pit": False},
+                    {"at_ms": 118000, "distance": 1.0, "in_pit": False},
+                    {"at_ms": 194659, "distance": 1.97, "in_pit": True},
+                    {"at_ms": 208000, "distance": 1.97, "in_pit": True},
+                    {"at_ms": 208000, "distance": 2.0, "in_pit": False},
+                ],
+            },
+            {
+                "driver_id": "hadjar",
+                "code": "HAD",
+                "team": "rb",
+                "grid": 11,
+                "classified": False,
+                "keyframes": [{"at_ms": 0, "distance": 0.0, "in_pit": False}],
+            },
+        ],
     }
 
 

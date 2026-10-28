@@ -1,8 +1,7 @@
 from web.entities.replay import ReplayLayout, replay_layout, replay_payload
-from web.entities.units import Milliseconds, RoundNumber, Season
-from web.features.pages import replay_page
+from web.entities.units import Milliseconds
 
-from tests.web.fakes import AUSTRALIA, REPLAY, MemoryCatalogue
+from tests.web.fakes import REPLAY
 
 
 def test_layout_spans_the_race_duration() -> None:
@@ -41,11 +40,3 @@ def test_payload_is_plain_json_with_styles_keyframes_and_finish_labels() -> None
     }
     assert payload["drivers"][0]["finish"] == "3:27.652"
     assert payload["drivers"][2]["finish"] is None
-
-
-def test_replay_page_combines_race_summary_layout_and_payload() -> None:
-    page = replay_page(MemoryCatalogue(), Season(2025), RoundNumber(1))
-
-    assert page.race == AUSTRALIA
-    assert page.layout.duration_ms == 213000
-    assert [driver["code"] for driver in page.payload["drivers"]] == ["NOR", "PIA", "HAD"]

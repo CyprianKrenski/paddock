@@ -15,21 +15,13 @@ def test_missing_url_is_none(db_sessions: sessionmaker[Session]) -> None:
     assert store.get("/1900/1/laps.json?limit=100&offset=0") is None
 
 
-def test_put_then_get_returns_the_body(db_sessions: sessionmaker[Session]) -> None:
-    store = SqlRawResponseStore(db_sessions)
-
-    store.put("/2025/1/laps.json?limit=100&offset=0", {"MRData": {"total": "921"}})
-
-    assert store.get("/2025/1/laps.json?limit=100&offset=0") == {"MRData": {"total": "921"}}
-
-
 def test_put_twice_keeps_the_latest_body(db_sessions: sessionmaker[Session]) -> None:
     store = SqlRawResponseStore(db_sessions)
 
-    store.put("/x.json", {"v": 1})
-    store.put("/x.json", {"v": 2})
+    store.put("/2025/1/laps.json?limit=100&offset=0", {"MRData": {"total": "921"}})
+    store.put("/2025/1/laps.json?limit=100&offset=0", {"MRData": {"total": "922"}})
 
-    assert store.get("/x.json") == {"v": 2}
+    assert store.get("/2025/1/laps.json?limit=100&offset=0") == {"MRData": {"total": "922"}}
 
 
 def test_store_commits_its_own_work_but_the_test_transaction_stays_contained(

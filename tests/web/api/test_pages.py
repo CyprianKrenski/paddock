@@ -25,10 +25,11 @@ def test_home_lists_seasons() -> None:
     assert '<a href="/seasons/2025">2025</a>' in response.text
 
 
-def test_season_page_shows_load_button_only_for_pending_rounds() -> None:
+def test_season_page_links_to_the_replay_and_offers_load_only_for_pending_rounds() -> None:
     html = client_with(MemoryCatalogue()).get("/seasons/2025").text
 
     assert '<a href="/races/2025/1/replay">Australian Grand Prix</a>' in html
+    assert 'href="/races/2025/1"' not in html
     assert 'action="/races/2025/2/load"' in html
     assert 'action="/races/2025/1/load"' not in html
 
@@ -127,13 +128,7 @@ def test_replay_page_embeds_keyframes_and_the_script() -> None:
     assert '<button type="button" id="play">Play</button>' in html
     assert '<option value="120" selected>120x</option>' in html
     assert "1x" not in html.split("<select")[1].split("</select>")[0]
-
-
-def test_season_page_links_to_the_replay_only() -> None:
-    html = client_with(MemoryCatalogue()).get("/seasons/2025").text
-
-    assert '<a href="/races/2025/1/replay">Australian Grand Prix</a>' in html
-    assert 'href="/races/2025/1"' not in html
+    assert "r.ok ? r.text()" in html
 
 
 def test_pages_carry_breadcrumbs_back_to_the_seasons() -> None:
@@ -164,4 +159,3 @@ def test_standings_fragment_shows_places_gained_since_the_grid() -> None:
     assert html.count('<span class="gain">+1</span>') == 1
     assert html.count('<span class="loss">-1</span>') == 1
     assert '<span class="same">&ndash;</span>' not in html
-    assert "r.ok ? r.text()" in client_with(MemoryCatalogue()).get("/races/2025/1/replay").text

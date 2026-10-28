@@ -2,23 +2,17 @@ import pytest
 
 from web.entities.units import RoundNumber, Season
 from web.entities.views import NotFound
-from web.features.pages import replay_page, season_page
+from web.features.pages import replay_page
 
-from tests.web.fakes import AUSTRALIA, CHINA, MemoryCatalogue
-
-
-def test_season_page_lists_races_with_their_status() -> None:
-    page = season_page(MemoryCatalogue(), Season(2025))
-
-    assert page.races == (AUSTRALIA, CHINA)
+from tests.web.fakes import AUSTRALIA, MemoryCatalogue
 
 
-def test_replay_page_combines_summary_and_keyframes() -> None:
+def test_replay_page_combines_summary_layout_and_payload() -> None:
     page = replay_page(MemoryCatalogue(), Season(2025), RoundNumber(1))
 
     assert page.race == AUSTRALIA
-    assert page.payload["drivers"][0]["code"] == "NOR"
-    assert page.payload["fastest_laps"] == [[117099, "norris"], [208000, "piastri"]]
+    assert page.layout.duration_ms == 213000
+    assert [driver["code"] for driver in page.payload["drivers"]] == ["NOR", "PIA", "HAD"]
 
 
 def test_unknown_round_is_not_found() -> None:
